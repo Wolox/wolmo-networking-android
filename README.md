@@ -6,6 +6,27 @@
 
 The NETWORKING module provides a separation from the network tier from the rest of the project while also providing offline support capabilities.
 
+### Usage
+
+Import the module as alibrary in your project using Gradle:
+
+**root build.gradle**
+```groovy
+allprojects {
+  repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+  }
+}
+```
+**your app module build.gradle**
+```groovy
+dependencies {
+        compile 'com.github.Wolox:wolmo-maps-android:master-SNAPSHOT'
+}
+```
+Note: The above line will download the latest version of the module, if you want to run an specific version replace `master-SNAPSHOT` with `1.0.0` or any other version.
+
 ### Features
 
 * Cache (offline) mechanisms base classes
