@@ -22,7 +22,7 @@ allprojects {
 **your app module build.gradle**
 ```groovy
 dependencies {
-        compile 'com.github.Wolox:wolmo-maps-android:master-SNAPSHOT'
+        compile 'com.github.Wolox:wolmo-networking-android:master-SNAPSHOT'
 }
 ```
 Note: The above line will download the latest version of the module, if you want to run an specific version replace `master-SNAPSHOT` with `1.0.0` or any other version.
