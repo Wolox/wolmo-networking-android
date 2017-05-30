@@ -20,7 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package ar.com.wolox.wolmo.networking;
+package ar.com.wolox.wolmo.networking.offline;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
@@ -31,6 +31,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import ar.com.wolox.wolmo.core.callback.WoloxCallback;
+import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
+import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import okhttp3.Cache;
 import okhttp3.ResponseBody;
 import retrofit2.Call;

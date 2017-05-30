@@ -20,21 +20,47 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package ar.com.wolox.wolmo.networking;
+package ar.com.wolox.wolmo.networking.offline;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-
-public interface ICallCollapser {
+/**
+ * Interface, which resembles a CRUD (Create, Read, Update & Delete), for querying cached data.
+ */
+public interface ICache {
 
     /**
-     * Handles the API call avoiding repetitive and useless requests as much as possible
+     * Stores data of class {@link T}.
      *
-     * @param call     to be made to the API
-     * @param callback to be called after executing it
+     * @param clazz class of the data
+     * @param data  to store
      */
-    <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback);
+    <T> void save(@NonNull Class<T> clazz, @NonNull T data);
+
+    /**
+     * @param clazz  class of the data
+     * @param key    to identify the object
+     * @param update to apply to the data
+     * @return updated data. <code>null</code> if there was no information to update.
+     */
+    @Nullable
+    <T> T update(@NonNull Class<T> clazz, @NonNull Object key, IUpdate<T> update);
+
+    /**
+     * @param clazz class of the data to read
+     * @param key   to identify the object
+     * @return data found. <code>null</code> if there was none.
+     */
+    @Nullable
+    <T> T read(@NonNull Class<T> clazz, @NonNull Object key);
+
+    /**
+     * Clears data of class {@link T}, identified with a key, from cache.
+     *
+     * @param clazz target {@link Class<T>}
+     * @param key   to identify the object
+     */
+    <T> void clear(@NonNull Class<T> clazz, @NonNull Object key);
 
 }
