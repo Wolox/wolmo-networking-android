@@ -42,7 +42,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public abstract class RetrofitServices {
 
     private Retrofit mRetrofit;
-    private boolean mIsInitialized = false;
     private Map<Class, Object> mServices;
 
     /**
@@ -58,7 +57,6 @@ public abstract class RetrofitServices {
                 .addConverterFactory(GsonConverterFactory.create(getGson()))
                 .client(getOkHttpClient())
                 .build();
-        mIsInitialized = true;
     }
 
     /**
@@ -116,6 +114,16 @@ public abstract class RetrofitServices {
     }
 
     /**
+     * Checks if the {@link Retrofit} client has been initialized at least once.
+     *
+     * @return Returns <code>True</code> if the Retrofit client has been initialized and is ready to
+     * be used, <code>False</code> otherwise.
+     */
+    private boolean isInitialized() {
+        return mRetrofit != null;
+    }
+
+    /**
      * Builds and returns a Retrofit Service.
      * If the service wasn't accessed, it'll be created and cached internally.
      * On successive requests, the already created instance will be returned.
@@ -131,7 +139,7 @@ public abstract class RetrofitServices {
      * @return service
      */
     public <T> T getService(@NonNull Class<T> clazz) {
-        if (!mIsInitialized) throw new RuntimeException("RetrofitServices is not initialized! " +
+        if (!isInitialized()) throw new RuntimeException("RetrofitServices is not initialized! " +
                 "Must call init() at least once before calling getService(clazz)");
 
         T service = (T) mServices.get(clazz);
