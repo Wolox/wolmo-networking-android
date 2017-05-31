@@ -25,16 +25,22 @@ dependencies {
         compile 'com.github.Wolox:wolmo-networking-android:master-SNAPSHOT'
 }
 ```
-Note: The above line will download the latest version of the module, if you want to run an specific version replace `master-SNAPSHOT` with `1.0.0` or any other version.
+Note: The above line will download the latest version of the module, if you want to run an specific version replace `master-SNAPSHOT` with `1.0.0` or any other version. Avaiable versions can be found here: [Github releases](https://github.com/Wolox/wolmo-networking-android/releases)
 
 ### Features
 
+* Perform REST API calls using a preconfigured Retrofit client
+* HTTP requests logging in LogCat preconfigured
+* `Time` classes handling preconfigured with Retrofit and custom serializers/deserializers
 * Cache (offline) mechanisms base classes
 * Repository pattern oriented architecture 
 
 ### Dependencies
 
 1. [WOLMO CORE](https://github.com/Wolox/wolmo-core-android)
+2. [Retrofit](https://github.com/square/retrofit)
+3. [OkHTTP3](https://github.com/square/okhttp)
+4. [Joda Time](http://www.joda.org/joda-time/)
 
 ## <a name="topic-contributing"></a> Contributing
 
@@ -46,8 +52,9 @@ Note: The above line will download the latest version of the module, if you want
 
 ## <a name="topic-about"></a> About
 
-This project is maintained by [Juan Ignacio Molina](https://github.com/juanignaciomolina), [Emanuel Lamela](https://github.com/emalamela)
-and it was written by [Wolox](http://www.wolox.com.ar).
+This project was written by [Wolox](http://www.wolox.com.ar) and is maintained by:
+* [Juan Ignacio Molina](https://github.com/juanignaciomolina)
+* [Emanuel Lamela](https://github.com/emalamela)
 
 ![Wolox](https://raw.githubusercontent.com/Wolox/press-kit/master/logos/logo_banner.png)
 
