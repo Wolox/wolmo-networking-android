@@ -20,47 +20,33 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package ar.com.wolox.wolmo.networking;
+package ar.com.wolox.wolmo.networking.optimizations;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import retrofit2.Call;
+import retrofit2.Callback;
 
 /**
- * Interface, which resembles a CRUD (Create, Read, Update & Delete), for querying cached data.
+ * A Call Collapser is a mechanism of network optimization that prevents repetitive consecutive
+ * HTTP requests that would most probably return the same response from the network.
+ * <p>
+ * It enqueues requests of the same type so only one HTTP request is sent over the network but
+ * every local callback gets notified as if they have made the request.
+ * <p>
+ * Example:
+ * Making several consecutive GET HTTP requests to "www.example.com/v1/users/$userID"
+ * in a short interval will probably result in the same user data being retrieved. A Call Collapser
+ * would instead make only one HTTP request and return the same result to every local caller.
  */
-public interface ICache {
+public interface ICallCollapser {
 
     /**
-     * Stores data of class {@link T}.
+     * Handles the API call avoiding repetitive and useless requests as much as possible
      *
-     * @param clazz class of the data
-     * @param data  to store
+     * @param call     to be made to the API
+     * @param callback to be called after executing it
      */
-    <T> void save(@NonNull Class<T> clazz, @NonNull T data);
-
-    /**
-     * @param clazz  class of the data
-     * @param key    to identify the object
-     * @param update to apply to the data
-     * @return updated data. <code>null</code> if there was no information to update.
-     */
-    @Nullable
-    <T> T update(@NonNull Class<T> clazz, @NonNull Object key, IUpdate<T> update);
-
-    /**
-     * @param clazz class of the data to read
-     * @param key   to identify the object
-     * @return data found. <code>null</code> if there was none.
-     */
-    @Nullable
-    <T> T read(@NonNull Class<T> clazz, @NonNull Object key);
-
-    /**
-     * Clears data of class {@link T}, identified with a key, from cache.
-     *
-     * @param clazz target {@link Class<T>}
-     * @param key   to identify the object
-     */
-    <T> void clear(@NonNull Class<T> clazz, @NonNull Object key);
+    <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback);
 
 }

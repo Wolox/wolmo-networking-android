@@ -10,6 +10,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
+        consumerProguardFiles 'proguard-joda-time.pro', 'proguard-retrofit.pro',
+                'proguard-okhttp.pro'
     }
 
     lintOptions {
@@ -21,8 +23,13 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-    compile 'com.github.Wolox:wolmo-core-android:master'
+    compile 'com.github.Wolox:wolmo-core-android:v0.5.0'
 
     // Third party
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.2.0'
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.7.0'
+    compile 'com.squareup.okhttp3:okhttp:3.7.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.7.0'
+    compile 'joda-time:joda-time:2.9.9'
 }

@@ -20,7 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package ar.com.wolox.wolmo.networking;
+package ar.com.wolox.wolmo.networking.optimizations;
 
 import android.support.annotation.NonNull;
 

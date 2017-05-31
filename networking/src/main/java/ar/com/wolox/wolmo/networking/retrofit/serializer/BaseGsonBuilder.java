@@ -1,5 +1,3 @@
-package ar.com.wolox.wolmo.networking;
-
 /**
  * MIT License
  * <p>
@@ -22,26 +20,30 @@ package ar.com.wolox.wolmo.networking;
  * DEALINGS IN THE SOFTWARE.
  */
 
+package ar.com.wolox.wolmo.networking.retrofit.serializer;
+
+import android.support.annotation.NonNull;
+
+import com.google.gson.FieldNamingPolicy;
+
+import org.joda.time.LocalDate;
 
 /**
- * Callback interface for {@link Repository} class operations.
- *
- * @param <D> Data to be offered when success happens.
+ * This class binds classes with custom serializers and deserializers
  */
-public interface IRepositoryCallback<D> {
+public class BaseGsonBuilder {
 
     /**
-     * Success case that exposes the data retrieved as a parameter.
+     * Provides a basic {@link com.google.gson.GsonBuilder} that already has bindings
+     * to perform common serializations and deserializations with Dates using JodaTime library.
      *
-     * @param data retrieved information.
+     * @return Returns and instance of {@link com.google.gson.GsonBuilder} with basic bindings
      */
-    void onSuccess(D data);
-
-    /**
-     * Error case that describes itself with an error code.
-     *
-     * @param code error code.
-     */
-    void onError(int code);
+    @NonNull
+    public static com.google.gson.GsonBuilder getBaseGsonBuilder() {
+        return new com.google.gson.GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapter(LocalDate.class, new LocalDateSerializer());
+    }
 
 }

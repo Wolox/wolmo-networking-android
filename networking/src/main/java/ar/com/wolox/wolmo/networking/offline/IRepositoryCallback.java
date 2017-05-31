@@ -1,5 +1,3 @@
-package ar.com.wolox.wolmo.networking;
-
 /**
  * MIT License
  * <p>
@@ -22,12 +20,27 @@ package ar.com.wolox.wolmo.networking;
  * DEALINGS IN THE SOFTWARE.
  */
 
+package ar.com.wolox.wolmo.networking.offline;
 
 /**
- * Contains information for updating elements of type {@link T}.
+ * Callback interface for {@link Repository} class operations.
  *
- * @param <T> type of element it's capable to update
+ * @param <D> Data to be offered when success happens.
  */
-public interface IUpdate<T> {
+public interface IRepositoryCallback<D> {
+
+    /**
+     * Success case that exposes the data retrieved as a parameter.
+     *
+     * @param data retrieved information.
+     */
+    void onSuccess(D data);
+
+    /**
+     * Error case that describes itself with an error code.
+     *
+     * @param code error code.
+     */
+    void onError(int code);
 
 }
