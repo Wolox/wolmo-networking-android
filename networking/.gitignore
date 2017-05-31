@@ -1,0 +1,4 @@
+/build
+
+# Production Keystore information for Play Store signing
+keystore.gradle
