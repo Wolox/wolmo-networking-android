@@ -24,13 +24,14 @@ package ar.com.wolox.wolmo.networking.retrofit;
 
 import android.support.annotation.CallSuper;
 
-import ar.com.wolox.wolmo.core.WoloxApplication;
+import ar.com.wolox.wolmo.core.WolmoApplication;
+
 
 /**
- * This class extends {@link WoloxApplication} to easily initialize and get and instance of
+ * This class extends {@link ar.com.wolox.wolmo.core.WolmoApplication} to easily initialize and get and instance of
  * {@link RetrofitServices} to perform API calls.
  */
-public abstract class NetworkingApplication extends WoloxApplication {
+public abstract class NetworkingApplication extends WolmoApplication {
 
     private static RetrofitServices sRetrofitServices;
 

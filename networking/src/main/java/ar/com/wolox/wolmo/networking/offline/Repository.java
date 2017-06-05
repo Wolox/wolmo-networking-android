@@ -30,9 +30,9 @@ import android.support.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import ar.com.wolox.wolmo.core.callback.WoloxCallback;
 import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
+import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
 import okhttp3.Cache;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -206,7 +206,7 @@ public abstract class Repository {
             throw new IllegalStateException("Call should be ready to use");
         }
 
-        mCallCollapser.enqueue(call, new WoloxCallback<T>() {
+        mCallCollapser.enqueue(call, new NetworkCallback<T>() {
             @Override
             public void onResponseSuccessful(T data) {
                 mCache.save(clazz, data);
