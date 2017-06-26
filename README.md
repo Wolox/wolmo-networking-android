@@ -36,7 +36,61 @@ Note: The above line will download the latest version of the module, if you want
 * HTTP requests logging in LogCat preconfigured
 * `Time` classes handling preconfigured with Retrofit and custom serializers/deserializers
 * Cache (offline) mechanisms base classes
-* Repository pattern oriented architecture 
+* Repository pattern oriented architecture
+
+
+### Usages
+
+An example instantiation and usage of the `Repository` class is the following.
+
+Consider the case of an app that needs to load a set of `Task`s and wants to fetch them locally first (See `Repository.AccessPolicy` for other policies). To create the necessary `Repository` these few lines of code are needed:
+
+```
+mTaskRepository = new Repository.Builder<List<Task>, TaskCache>(cache, new TaskQueryStrategy())
+                .withDefaultAccessPolicy(Repository.CACHE_FIRST)
+                .build();
+```
+
+Notice that the creation requires 2 things: a `TaskCache` and a `TaskQueryStrategy`.
+
+We won't dwell in the details of what a `TaskCache` should be. The advantage is that it can be **anything the users of the library consider a cache**. It can be implemented atop of memory, SQLite database, a faster web service, etc.
+
+On the other hand, a `QueryStrategy` is mechanism that defines what to do in case the `Repository` determines it should either `read`, `invalidate` or `save` to the cache implementation.
+
+```
+public class TaskQueryStrategy extends Repository.QueryStrategy<List<Task>, TaskCache> {
+    @Nullable
+    @Override
+    public List<Task> read(@NonNull TaskCache cache) {
+        // Read from cache
+        // Important to notice that it should return null when there's a cache miss.
+     }
+
+     @Override
+     public void invalidate(@NonNull TaskCache cache) {
+         // Invalidate tasks in cache
+     }
+
+     @Override
+     public void save(@NonNull List<Task> tasks, @NonNull TaskCache cache) {
+         // Save tasks to cache
+     }
+}
+```
+
+*The generics are left for the example's sake*.
+
+Finally, last step is to `query` the newly created `Repository<Task, TaskCache>` to then act on the `Task`s information retrieved.
+
+```
+mTaskRepository.query(
+    getService(TaskService.class).fetchTasks(),
+    new RepositoryCallback<List<Task>> {
+        // Callback Implementation
+    }
+```
+
+Information retrieval is notified through `RepositoryCallback#onSuccess(T)` and errors through `RepositoryCallback#onError(int)`. The user can then execute the required behaviour after said events. Whether it fetched the information from network, memory, disk or any other source is transparent.
 
 ### Dependencies
 
