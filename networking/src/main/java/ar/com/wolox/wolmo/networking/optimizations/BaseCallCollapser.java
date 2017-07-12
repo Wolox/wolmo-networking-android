@@ -33,13 +33,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
+ * Thread-safe implementation of {@link ICallCollapser}.
  * Collapses GET requests into one by calling the first and reporting the result to every callback.
  */
 public class BaseCallCollapser implements ICallCollapser {
 
     private static final String HTTP_METHOD_GET = "GET";
 
-    private ConcurrentHashMap<String, Queue<Callback>> mGetCallbackQueues;
+    private final ConcurrentHashMap<String, Queue<Callback>> mGetCallbackQueues;
 
     public BaseCallCollapser() {
         mGetCallbackQueues = new ConcurrentHashMap<>();
