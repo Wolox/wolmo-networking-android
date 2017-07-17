@@ -28,6 +28,8 @@ package ar.com.wolox.wolmo.networking.utils;
  */
 public class NetworkCodes {
 
+    private NetworkCodes() {}
+
     /**
      * 2XX Success
      */
