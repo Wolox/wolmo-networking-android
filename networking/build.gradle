@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-//apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.Wolox'
 
@@ -29,8 +29,8 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-    //compile 'com.github.Wolox:wolmo-core-android:v1.0.0'
-    compile project(':core')
+    compile 'com.github.Wolox:wolmo-core-android:dagger-android-SNAPSHOT'
+
 
     // Dagger
     provided "com.google.dagger:dagger:$dagger_version"
