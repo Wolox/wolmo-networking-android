@@ -19,30 +19,40 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package ar.com.wolox.wolmo.networking.di.modules;
+package ar.com.wolox.wolmo.networking.utils;
 
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 
-import dagger.Module;
-import dagger.Provides;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 
-@Module
-public class OkHttpClientModule {
+/**
+ * Utils to create {@link HttpLoggingInterceptor} for {@link OkHttpClient}.
+ */
+public class LoggingUtils {
 
-    @Provides
-    OkHttpClient provideOkHttpClient(OkHttpClient.Builder okHttpBuilder, @Nullable Interceptor... interceptors) {
-        if (interceptors != null) {
-            for (Interceptor interceptor : interceptors) {
-                okHttpBuilder.addInterceptor(interceptor);
-            }
-        }
-        return okHttpBuilder.build();
+    private LoggingUtils() {}
+
+    /**
+     * Returns a {@link HttpLoggingInterceptor} with a default level of {@link
+     * HttpLoggingInterceptor.Level#BODY}.
+     *
+     * @return New instance of interceptor
+     */
+    public static HttpLoggingInterceptor buildHttpLoggingInterceptor() {
+        return buildHttpLoggingInterceptor(HttpLoggingInterceptor.Level.BODY);
     }
 
-    @Provides
-    OkHttpClient.Builder provideOkHttpClientBuilder() {
-        return new OkHttpClient.Builder();
+    /**
+     * Returns a {@link HttpLoggingInterceptor} with the level given by <b>level</b>.
+     *
+     * @param level - Logging level for the interceptor.
+     * @return New instance of interceptor
+     */
+    public static HttpLoggingInterceptor buildHttpLoggingInterceptor(
+          @NonNull HttpLoggingInterceptor.Level level) {
+        HttpLoggingInterceptor loggerInterceptor = new HttpLoggingInterceptor();
+        loggerInterceptor.setLevel(level);
+        return loggerInterceptor;
     }
 }
