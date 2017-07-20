@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  * <p>
  * Copyright (c) 2017 Wolox S.A
@@ -24,6 +24,8 @@ package ar.com.wolox.wolmo.networking.retrofit;
 
 import android.support.annotation.NonNull;
 
+import ar.com.wolox.wolmo.networking.di.scopes.NetworkingScope;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ import retrofit2.Retrofit;
  * This class handles {@link Retrofit} main class initialization and services instances to perform
  * API calls to several endpoints.
  */
+@NetworkingScope
 public class RetrofitServices {
 
     private Retrofit mRetrofit;

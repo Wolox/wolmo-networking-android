@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  * <p>
  * Copyright (c) 2017 Wolox S.A
@@ -19,31 +19,14 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+package ar.com.wolox.wolmo.networking.di.scopes;
 
-package ar.com.wolox.wolmo.networking.retrofit.serializer;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-import android.support.annotation.NonNull;
+import javax.inject.Scope;
 
-import com.google.gson.FieldNamingPolicy;
-
-import org.joda.time.LocalDate;
-
-/**
- * This class binds classes with custom serializers and deserializers
- */
-public class BaseGsonBuilder {
-
-    /**
-     * Provides a basic {@link com.google.gson.GsonBuilder} that already has bindings
-     * to perform common serializations and deserializations with Dates using JodaTime library.
-     *
-     * @return Returns and instance of {@link com.google.gson.GsonBuilder} with basic bindings
-     */
-    @NonNull
-    public static com.google.gson.GsonBuilder getBaseGsonBuilder() {
-        return new com.google.gson.GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapter(LocalDate.class, new LocalDateSerializer());
-    }
-
+@Scope
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NetworkingScope {
 }

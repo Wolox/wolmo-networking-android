@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  * <p>
  * Copyright (c) 2017 Wolox S.A
@@ -27,13 +27,14 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
+import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
+import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
-import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
-import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
-import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 

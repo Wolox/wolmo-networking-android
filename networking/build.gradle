@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
+//apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.Wolox'
 
@@ -19,17 +19,27 @@ android {
     }
 }
 
+buildscript {
+    ext.dagger_version = '2.11-rc2'
+    ext.retrofit_version = '2.2.0'
+    ext.okhttp_version = '3.7.0'
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-    compile 'com.github.Wolox:wolmo-core-android:v1.0.0'
+    //compile 'com.github.Wolox:wolmo-core-android:v1.0.0'
+    compile project(':core')
+
+    // Dagger
+    provided "com.google.dagger:dagger:$dagger_version"
+    annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Third party
-    compile 'com.squareup.retrofit2:retrofit:2.2.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.2.0'
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.7.0'
-    compile 'com.squareup.okhttp3:okhttp:3.7.0'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.7.0'
-    compile 'joda-time:joda-time:2.9.9'
+    compile "com.squareup.retrofit2:retrofit:$retrofit_version"
+    compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    compile "com.squareup.okhttp3:okhttp-urlconnection:$okhttp_version"
+    compile "com.squareup.okhttp3:okhttp:$okhttp_version"
+    compile "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
 }
