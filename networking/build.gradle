@@ -30,7 +30,6 @@ dependencies {
     // Wolmo
     compile 'com.github.Wolox:wolmo-core-android:dagger-android-SNAPSHOT'
 
-
     // Dagger
     provided "com.google.dagger:dagger:$dagger_version"
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
