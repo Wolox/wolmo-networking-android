@@ -10,8 +10,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
-        consumerProguardFiles 'proguard-joda-time.pro', 'proguard-retrofit.pro',
-                'proguard-okhttp.pro'
+        consumerProguardFiles 'proguard-retrofit.pro', 'proguard-okhttp.pro'
     }
 
     lintOptions {
