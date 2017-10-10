@@ -4,12 +4,12 @@ apply plugin: 'com.github.dcendents.android-maven'
 group = 'com.github.Wolox'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 26
         consumerProguardFiles 'proguard-joda-time.pro', 'proguard-retrofit.pro',
                 'proguard-okhttp.pro'
     }
@@ -19,17 +19,25 @@ android {
     }
 }
 
+buildscript {
+    ext.wolmo_version = 'v1.2.0'
+    ext.retrofit_version = '2.3.0'
+    ext.okhttp3_version = '3.9.0'
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-    compile 'com.github.Wolox:wolmo-core-android:v1.0.0'
+    compile "com.github.Wolox:wolmo-core-android:$wolmo_version"
 
     // Third party
-    compile 'com.squareup.retrofit2:retrofit:2.2.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.2.0'
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.7.0'
-    compile 'com.squareup.okhttp3:okhttp:3.7.0'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.7.0'
+    compile "com.squareup.retrofit2:retrofit:$retrofit_version"
+    compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
+
+    compile "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
+    compile "com.squareup.okhttp3:okhttp:$okhttp3_version"
+    compile "com.squareup.okhttp3:logging-interceptor:$okhttp3_version"
+
     compile 'joda-time:joda-time:2.9.9'
 }
