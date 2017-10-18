@@ -4,13 +4,14 @@ apply plugin: 'com.github.dcendents.android-maven'
 group = 'com.github.Wolox'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 25
-        consumerProguardFiles 'proguard-retrofit.pro', 'proguard-okhttp.pro', 'proguard-gson.pro'
+        targetSdkVersion 26
+        consumerProguardFiles 'proguard-retrofit.pro', 'proguard-okhttp.pro', 'proguard-gson.pro',
+                'proguard-joda-time.pro'
     }
 
     lintOptions {
@@ -19,17 +20,18 @@ android {
 }
 
 buildscript {
+    // TODO We need to update the wolmo version when wolmo-core-android is merged
+    ext.wolmo_version = 'dagger-android-SNAPSHOT'
+    ext.retrofit_version = '2.3.0'
+    ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.11-rc2'
-    ext.retrofit_version = '2.2.0'
-    ext.okhttp_version = '3.7.0'
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-    // TODO We need to update the wolmo version when wolmo-core-android is merged
-    compile 'com.github.Wolox:wolmo-core-android:dagger-android-SNAPSHOT'
+    compile "com.github.Wolox:wolmo-core-android:$wolmo_version"
 
     // Dagger
     provided "com.google.dagger:dagger:$dagger_version"
@@ -38,6 +40,7 @@ dependencies {
     // Third party
     compile "com.squareup.retrofit2:retrofit:$retrofit_version"
     compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    compile "com.squareup.okhttp3:okhttp-urlconnection:$okhttp_version"
-    compile "com.squareup.okhttp3:okhttp:$okhttp_version"
+    compile "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
+    compile "com.squareup.okhttp3:okhttp:$okhttp3_version"
+    compile 'joda-time:joda-time:2.9.9'
 }
