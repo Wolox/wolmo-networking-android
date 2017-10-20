@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'jacoco-android'
 
 group = 'com.github.Wolox'
 
@@ -43,4 +44,10 @@ dependencies {
     compile "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
     compile "com.squareup.okhttp3:okhttp:$okhttp3_version"
     compile 'joda-time:joda-time:2.9.9'
+
+    // Test
+    testCompile "junit:junit:4.12"
+    testCompile "org.mockito:mockito-inline:2.11.0" // Mockito inline adds support for mocking final classes and methods
+    testCompile "org.assertj:assertj-core:3.8.0"
+
 }
