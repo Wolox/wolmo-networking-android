@@ -33,6 +33,8 @@ import ar.com.wolox.wolmo.networking.utils.GsonTypeAdapter;
 
 import org.joda.time.LocalDate;
 
+import javax.inject.Named;
+
 import dagger.Module;
 import dagger.Provides;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -41,30 +43,35 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class GsonModule {
 
     @Provides
-    GsonConverterFactory provideGsonConverterFactory(Gson gson) {
+    static GsonConverterFactory provideGsonConverterFactory(Gson gson) {
         return GsonConverterFactory.create(gson);
     }
 
     @Provides
-    Gson provideGson(GsonBuilder gsonBuilder) {
+    static Gson provideGson(GsonBuilder gsonBuilder) {
         return gsonBuilder.create();
     }
 
     @Provides
-    GsonBuilder provideGsonBuilder(@NonNull FieldNamingPolicy namingPolicy,
-          @Nullable GsonTypeAdapter... typeAdapters) {
+    @Named("newInstance")
+    static GsonBuilder provideNewGsonBuilder() {
+        return new GsonBuilder();
+    }
 
-        GsonBuilder builder = new GsonBuilder();
-        builder.setFieldNamingPolicy(namingPolicy);
+    @Provides
+    static GsonBuilder provideGsonBuilder(@Named("newInstance") GsonBuilder gsonBuilder,
+            @NonNull FieldNamingPolicy namingPolicy, @Nullable GsonTypeAdapter... typeAdapters) {
 
-        if (typeAdapters != null) {
+        gsonBuilder.setFieldNamingPolicy(namingPolicy);
+
+        if (typeAdapters != null && typeAdapters.length > 0) {
             for (GsonTypeAdapter typeAdapter : typeAdapters) {
-                builder.registerTypeAdapter(typeAdapter.getType(), typeAdapter.getTypeAdapter());
+                gsonBuilder.registerTypeAdapter(typeAdapter.getType(), typeAdapter.getTypeAdapter());
             }
         } else {
-            builder.registerTypeAdapter(LocalDate.class, new LocalDateSerializer());
+            gsonBuilder.registerTypeAdapter(LocalDate.class, new LocalDateSerializer());
         }
 
-        return builder;
+        return gsonBuilder;
     }
 }

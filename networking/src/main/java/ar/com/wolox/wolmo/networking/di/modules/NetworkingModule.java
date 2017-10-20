@@ -27,6 +27,7 @@ import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
+import retrofit2.Retrofit.Builder;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 @Module
@@ -34,10 +35,18 @@ public class NetworkingModule {
 
     @Provides
     @NetworkingScope
-    Retrofit provideRetrofit(String baseUrl, GsonConverterFactory gsonConverterFactory, OkHttpClient client) {
-        return new Retrofit.Builder().baseUrl(baseUrl)
-            .addConverterFactory(gsonConverterFactory)
-            .client(client).build();
+    static Retrofit.Builder provideRetrofitBuilder() {
+        return new Builder();
     }
 
+    @Provides
+    @NetworkingScope
+    static Retrofit provideRetrofit(Retrofit.Builder builder, String baseUrl,
+            GsonConverterFactory gsonConverterFactory, OkHttpClient client) {
+
+        return builder.baseUrl(baseUrl)
+                .addConverterFactory(gsonConverterFactory)
+                .client(client)
+                .build();
+    }
 }
