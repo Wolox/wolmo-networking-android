@@ -36,8 +36,8 @@ import okhttp3.Response;
  */
 public abstract class ApiRestInterceptor implements Interceptor {
 
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String ACCEPT_HEADER = "Accept";
+    protected static final String CONTENT_TYPE_HEADER = "Content-Type";
+    protected static final String ACCEPT_HEADER = "Accept";
 
     /**
      * Intercepts the API call and adds custom headers to the request. By default, it will
