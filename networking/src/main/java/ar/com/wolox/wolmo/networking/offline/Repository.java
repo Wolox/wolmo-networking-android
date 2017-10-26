@@ -31,6 +31,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
+import ar.com.wolox.wolmo.networking.exception.CacheMissException;
+import ar.com.wolox.wolmo.networking.exception.NetworkResourceException;
 import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
@@ -44,9 +46,6 @@ import retrofit2.Call;
  * retrieve data and notify the user, determines the action to take and notifies accordingly.
  */
 public final class Repository<T, C> {
-
-    public static final int INTERNAL_ERROR_CODE = 666;
-    public static final int CACHE_MISS_ERROR_CODE = 888;
 
     /**
      * Flags for cache interaction control.
@@ -94,7 +93,6 @@ public final class Repository<T, C> {
     private static ICallCollapser CALL_COLLAPSER_INSTANCE = new BaseCallCollapser();
 
     private final C mCache;
-    private final QueryStrategy<T, C> mQueryStrategy;
     private final @AccessPolicy int mDefaultAccessPolicy;
     private final long mRefreshDeltaInMillis;
     private final ICallCollapser mCallCollapser;
@@ -106,20 +104,18 @@ public final class Repository<T, C> {
      * <p/>
      * Users of this class must use {@link Builder} to instantiate it.
      * @param cache to query for cached items
-     * @param queryStrategy to use when interacting with cache
      * @param defaultAccessPolicy that determines default interaction with cache
      * @param refreshDeltaInMillis Time interval up-to-date by the {@link #TIME_RESOLVE} policy.
      */
-    private Repository(@NonNull C cache, @NonNull QueryStrategy<T, C> queryStrategy,
-                       @AccessPolicy int defaultAccessPolicy,
+    private Repository(@NonNull C cache, @AccessPolicy int defaultAccessPolicy,
                        @IntRange(from = 1) long refreshDeltaInMillis) {
         mCache = cache;
-        mQueryStrategy = queryStrategy;
         mDefaultAccessPolicy = defaultAccessPolicy;
         mRefreshDeltaInMillis = refreshDeltaInMillis;
         mCallCollapser = CALL_COLLAPSER_INSTANCE;
         mLastRefreshMoment = System.currentTimeMillis();
     }
+
 
     /**
      * Queries the corresponding information provider, either network or cache, in order to retrieve
@@ -132,24 +128,31 @@ public final class Repository<T, C> {
      * @param call request that retrieves asked information
      * @param callback that notifies the result of the query
      */
-    public void query(@AccessPolicy int policy, @NonNull Call<T> call,
-                      @NonNull IRepositoryCallback<T> callback) {
-        if (accessCache(policy)) {
-            T cachedData = mQueryStrategy.read(mCache);
-            if (cachedData != null) {
-                if (shouldInvalidateCache(policy)) {
-                    mQueryStrategy.invalidate(mCache);
-                } else {
-                    callback.onSuccess(cachedData);
-                    return;
+    // TODO: Comment
+    public RepositoryQuery<T> query(@AccessPolicy final int policy, @NonNull final Call<T> call,
+                                    @NonNull final QueryStrategy<T, C> queryStrategy) {
+        return new RepositoryQuery<T>() {
+            @Override
+            public void run() {
+                if (accessCache(policy)) {
+                    T cachedData = queryStrategy.read(mCache);
+                    if (cachedData != null) {
+                        if (shouldInvalidateCache(policy)) {
+                            // TODO: Delete
+                            queryStrategy.invalidate(mCache);
+                        } else {
+                            doOnSuccess(cachedData);
+                            return;
+                        }
+                    } else if (policy == CACHE_ONLY) {
+                        doOnError(new CacheMissException());
+                        return;
+                    }
                 }
-            } else if (policy == CACHE_ONLY) {
-                callback.onError(CACHE_MISS_ERROR_CODE);
-                return;
-            }
-        }
 
-        fetchData(call, callback);
+                fetchData(call, queryStrategy, this);
+            }
+        };
     }
 
     /**
@@ -159,8 +162,17 @@ public final class Repository<T, C> {
      * @param call request that retrieves asked information
      * @param callback that notifies the result of the query
      */
-    public void query(@NonNull Call<T> call, @NonNull IRepositoryCallback<T> callback) {
-        query(mDefaultAccessPolicy, call, callback);
+    // TODO: Comment
+    public RepositoryQuery<T> query(@NonNull Call<T> call, @NonNull final QueryStrategy<T, C> queryStrategy) {
+        return query(mDefaultAccessPolicy, call, queryStrategy);
+    }
+
+    // TODO: Change signature to callback
+    public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> strategy,
+                      @NonNull final IRepositoryCallback<T> callback) {
+        RepositoryQuery<T> repositoryQuery = query(mDefaultAccessPolicy, call, strategy);
+
+        repositoryQuery.onSuccess(callback::onSuccess).onError(callback::onError).run();
     }
 
     /**
@@ -195,7 +207,10 @@ public final class Repository<T, C> {
      * @param callback that notifies the result of the query
      * @throws IllegalStateException if the <code>call</code> is either executed or cancelled.
      */
-    private void fetchData(@NonNull Call<T> call, @NonNull final IRepositoryCallback<T> callback) {
+    // TODO: Comment
+    private void fetchData(@NonNull final Call<T> call,
+                           @NonNull final QueryStrategy<T, C> queryStrategy,
+                           @NonNull final RepositoryQuery<T> repositoryQuery) {
         if (call.isExecuted() || call.isCanceled()) {
             throw new IllegalStateException("Call should be ready to use");
         }
@@ -203,19 +218,20 @@ public final class Repository<T, C> {
         mCallCollapser.enqueue(call, new NetworkCallback<T>() {
             @Override
             public void onResponseSuccessful(T data) {
-                mQueryStrategy.save(data, mCache);
+                queryStrategy.save(data, mCache);
                 updateRefreshMoment();
-                callback.onSuccess(data);
+                repositoryQuery.doOnSuccess(data);
             }
 
             @Override
             public void onResponseFailed(ResponseBody responseBody, int code) {
-                callback.onError(code);
+                repositoryQuery.doOnError(
+                        new NetworkResourceException(call.request().url().toString(), code));
             }
 
             @Override
             public void onCallFailure(Throwable throwable) {
-                callback.onError(INTERNAL_ERROR_CODE);
+                repositoryQuery.doOnError(throwable);
             }
         });
     }
@@ -227,7 +243,7 @@ public final class Repository<T, C> {
      * @param <T> class which is used for interacting with the {@link C} cache
      * @param <C> type of cache to use
      */
-    public static abstract class QueryStrategy<T, C> {
+    public interface QueryStrategy<T, C> {
 
         /**
          * Used whenever information needs to be retrieved.
@@ -237,14 +253,15 @@ public final class Repository<T, C> {
          * @return Data retrieved. Returning <code>null</code> means it was a cache miss.
          */
         @Nullable
-        public abstract T read(@NonNull C cache);
+        T read(@NonNull C cache);
 
         /**
          * Executed in case the cache information, in relation to a query, should be cleared.
          *
          * @param cache to invalidate data in
          */
-        public abstract void invalidate(@NonNull C cache);
+        // TODO: Delete
+        void invalidate(@NonNull C cache);
 
         /**
          * Is called into action for saving data fetched from network.
@@ -252,7 +269,7 @@ public final class Repository<T, C> {
          * @param data to store
          * @param cache to save data to
          */
-        public abstract void save(@NonNull T data, @NonNull C cache);
+        void save(@NonNull T data, @NonNull C cache);
 
     }
 
@@ -271,14 +288,12 @@ public final class Repository<T, C> {
     public static final class Builder<T, C> {
 
         private final C mCache;
-        private final QueryStrategy<T, C> mQueryStrategy;
 
         private int mDefaultAccessPolicy;
         private long mRefreshDeltaInMillis;
 
-        public Builder(@NonNull C cache, @NonNull QueryStrategy<T, C> strategy) {
+        public Builder(@NonNull C cache) {
             this.mCache = cache;
-            this.mQueryStrategy = strategy;
             this.mDefaultAccessPolicy = DEFAULT_ACCESS_POLICY;
             this.mRefreshDeltaInMillis = DEFAULT_REFRESH_DELTA_TIME;
         }
@@ -300,6 +315,7 @@ public final class Repository<T, C> {
          * @param refreshDeltaInMillis to set
          * @return The same instance of the {@link Builder}
          */
+        // TODO: Delete
         public final Builder<T, C> withRefreshDelta(@IntRange(from = 1) long refreshDeltaInMillis) {
             this.mRefreshDeltaInMillis = refreshDeltaInMillis;
             return this;
@@ -310,8 +326,7 @@ public final class Repository<T, C> {
          *          instance
          */
         public Repository<T, C> build() {
-            return new Repository<>(
-                    mCache, mQueryStrategy, mDefaultAccessPolicy, mRefreshDeltaInMillis);
+            return new Repository<>(mCache, mDefaultAccessPolicy, mRefreshDeltaInMillis);
         }
 
     }

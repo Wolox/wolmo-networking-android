@@ -36,11 +36,12 @@ public interface IRepositoryCallback<D> {
      */
     void onSuccess(D data);
 
+    // TODO: Comment
     /**
      * Error case that describes itself with an error code.
      *
      * @param code error code.
      */
-    void onError(int code);
+    void onError(Throwable throwable);
 
 }
