@@ -48,10 +48,10 @@ import retrofit2.Call;
 public final class Repository<T, C> {
 
     /**
-     * Flags for cache interaction control.
+     * Flags for cache access control.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({CACHE_NONE, CACHE_FIRST, CACHE_ONLY, TIME_RESOLVE})
+    @IntDef({CACHE_NONE, CACHE_FIRST, CACHE_ONLY})
     public @interface AccessPolicy {}
 
     /**
@@ -70,52 +70,40 @@ public final class Repository<T, C> {
     public static final int CACHE_ONLY = 3;
 
     /**
-     * Checks whether the refresh delta time has passed.
-     * If it has, it refreshes cache by getting data from API. Else, it returns cache data.
-     * </p>
-     * For example, if the field returns 2000, then 2 seconds have to elapse before the data
-     * is considered 'dirty'.
-     */
-    public static final int TIME_RESOLVE = 4;
-
-    /**
-     * Default refresh delta time. Users can modify it to set the default refresh delta time for
-     * future created instances of {@link Repository}.
-     */
-    public static long DEFAULT_REFRESH_DELTA_TIME = TimeUnit.DAYS.toMillis(1);
-
-    /**
      * Default {@link AccessPolicy}. Users can modify it to set the defalt policy for future
      * instances of {@link Repository}.
      */
-    public static @AccessPolicy int DEFAULT_ACCESS_POLICY = TIME_RESOLVE;
+    public static @AccessPolicy int DEFAULT_ACCESS_POLICY = CACHE_FIRST;
 
     private static ICallCollapser CALL_COLLAPSER_INSTANCE = new BaseCallCollapser();
 
     private final C mCache;
     private final @AccessPolicy int mDefaultAccessPolicy;
-    private final long mRefreshDeltaInMillis;
     private final ICallCollapser mCallCollapser;
-
-    private long mLastRefreshMoment;
 
     /**
      * Creates a repository.
      * <p/>
-     * Users of this class must use {@link Builder} to instantiate it.
      * @param cache to query for cached items
      * @param defaultAccessPolicy that determines default interaction with cache
-     * @param refreshDeltaInMillis Time interval up-to-date by the {@link #TIME_RESOLVE} policy.
      */
-    private Repository(@NonNull C cache, @AccessPolicy int defaultAccessPolicy,
-                       @IntRange(from = 1) long refreshDeltaInMillis) {
+    // TODO: Comment
+    public Repository(@NonNull C cache, @AccessPolicy int defaultAccessPolicy) {
         mCache = cache;
         mDefaultAccessPolicy = defaultAccessPolicy;
-        mRefreshDeltaInMillis = refreshDeltaInMillis;
         mCallCollapser = CALL_COLLAPSER_INSTANCE;
-        mLastRefreshMoment = System.currentTimeMillis();
     }
 
+    /**
+     * Creates a repository.
+     * <p/>
+     * @param cache to query for cached items
+     * @param defaultAccessPolicy that determines default interaction with cache
+     */
+    // TODO: Comment
+    public Repository(@NonNull C cache) {
+        this(cache, DEFAULT_ACCESS_POLICY);
+    }
 
     /**
      * Queries the corresponding information provider, either network or cache, in order to retrieve
@@ -134,23 +122,17 @@ public final class Repository<T, C> {
         return new RepositoryQuery<T>() {
             @Override
             public void run() {
-                if (accessCache(policy)) {
-                    T cachedData = queryStrategy.read(mCache);
-                    if (cachedData != null) {
-                        if (shouldInvalidateCache(policy)) {
-                            // TODO: Delete
-                            queryStrategy.invalidate(mCache);
-                        } else {
-                            doOnSuccess(cachedData);
-                            return;
-                        }
-                    } else if (policy == CACHE_ONLY) {
-                        doOnError(new CacheMissException());
-                        return;
-                    }
+                if (!accessCache(policy)) {
+                    fetchData(call, queryStrategy, this);
+                    return;
                 }
 
-                fetchData(call, queryStrategy, this);
+                T cachedData = queryStrategy.read(mCache);
+                if (cachedData != null) {
+                    doOnSuccess(cachedData);
+                } else if (policy == CACHE_ONLY) {
+                    doOnError(new CacheMissException());
+                }
             }
         };
     }
@@ -167,12 +149,19 @@ public final class Repository<T, C> {
         return query(mDefaultAccessPolicy, call, queryStrategy);
     }
 
-    // TODO: Change signature to callback
-    public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> strategy,
+    // TODO: Comment
+    public void query(@AccessPolicy final int policy, @NonNull final Call<T> call,
+                      @NonNull QueryStrategy<T, C> strategy,
                       @NonNull final IRepositoryCallback<T> callback) {
-        RepositoryQuery<T> repositoryQuery = query(mDefaultAccessPolicy, call, strategy);
+        RepositoryQuery<T> repositoryQuery = query(policy, call, strategy);
 
         repositoryQuery.onSuccess(callback::onSuccess).onError(callback::onError).run();
+    }
+
+    // TODO: Comment
+    public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> strategy,
+                      @NonNull final IRepositoryCallback<T> callback) {
+        query(call, strategy, callback);
     }
 
     /**
@@ -181,22 +170,6 @@ public final class Repository<T, C> {
      */
     private boolean accessCache(@AccessPolicy int policy) {
         return policy != CACHE_NONE;
-    }
-
-    /**
-     * Sets {@link #mLastRefreshMoment} to the current moment in time.
-     */
-    private void updateRefreshMoment() {
-        mLastRefreshMoment = System.currentTimeMillis();
-    }
-
-    /**
-     * @param policy policy taken
-     * @return whether cached data should be invalidated.
-     */
-    private boolean shouldInvalidateCache(@AccessPolicy int policy) {
-        return policy == TIME_RESOLVE &&
-                (System.currentTimeMillis() - mLastRefreshMoment) >= mRefreshDeltaInMillis;
     }
 
     /**
@@ -219,7 +192,6 @@ public final class Repository<T, C> {
             @Override
             public void onResponseSuccessful(T data) {
                 queryStrategy.save(data, mCache);
-                updateRefreshMoment();
                 repositoryQuery.doOnSuccess(data);
             }
 
@@ -252,16 +224,9 @@ public final class Repository<T, C> {
          *
          * @return Data retrieved. Returning <code>null</code> means it was a cache miss.
          */
+        // TODO: Rename
         @Nullable
         T read(@NonNull C cache);
-
-        /**
-         * Executed in case the cache information, in relation to a query, should be cleared.
-         *
-         * @param cache to invalidate data in
-         */
-        // TODO: Delete
-        void invalidate(@NonNull C cache);
 
         /**
          * Is called into action for saving data fetched from network.
@@ -269,65 +234,8 @@ public final class Repository<T, C> {
          * @param data to store
          * @param cache to save data to
          */
+        // TODO: Rename
         void save(@NonNull T data, @NonNull C cache);
-
-    }
-
-    /**
-     * Builder for {@link Repository}.
-     * <p/>
-     * Users must provide a cache object of type {@link C} and a {@link QueryStrategy} at creation.
-     * Every other parameter is optional.
-     *
-     * @see #DEFAULT_ACCESS_POLICY
-     * @see #DEFAULT_REFRESH_DELTA_TIME
-     *
-     * @param <T> Type of elements to interact with
-     * @param <C> Type of cache to handle
-     */
-    public static final class Builder<T, C> {
-
-        private final C mCache;
-
-        private int mDefaultAccessPolicy;
-        private long mRefreshDeltaInMillis;
-
-        public Builder(@NonNull C cache) {
-            this.mCache = cache;
-            this.mDefaultAccessPolicy = DEFAULT_ACCESS_POLICY;
-            this.mRefreshDeltaInMillis = DEFAULT_REFRESH_DELTA_TIME;
-        }
-
-        /**
-         * Sets the default {@link AccessPolicy} for the future built instance to use.
-         *
-         * @param defaultAccessPolicy to set
-         * @return The same instance of the {@link Builder}
-         */
-        public final Builder<T, C> withDefaultAccessPolicy(@AccessPolicy int defaultAccessPolicy) {
-            this.mDefaultAccessPolicy = defaultAccessPolicy;
-            return this;
-        }
-
-        /**
-         * Sets the default refresh delta time for the future built instance to use.
-         *
-         * @param refreshDeltaInMillis to set
-         * @return The same instance of the {@link Builder}
-         */
-        // TODO: Delete
-        public final Builder<T, C> withRefreshDelta(@IntRange(from = 1) long refreshDeltaInMillis) {
-            this.mRefreshDeltaInMillis = refreshDeltaInMillis;
-            return this;
-        }
-
-        /**
-         * @return A fully-fledged {@link Repository} with the configuration of the {@link Builder}
-         *          instance
-         */
-        public Repository<T, C> build() {
-            return new Repository<>(mCache, mDefaultAccessPolicy, mRefreshDeltaInMillis);
-        }
 
     }
 
