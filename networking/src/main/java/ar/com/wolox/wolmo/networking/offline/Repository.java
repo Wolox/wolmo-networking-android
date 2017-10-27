@@ -23,19 +23,18 @@
 package ar.com.wolox.wolmo.networking.offline;
 
 import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 import ar.com.wolox.wolmo.networking.exception.CacheMissException;
 import ar.com.wolox.wolmo.networking.exception.NetworkResourceException;
 import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
+import ar.com.wolox.wolmo.networking.utils.Consumer;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 
@@ -82,12 +81,11 @@ public final class Repository<T, C> {
     private final ICallCollapser mCallCollapser;
 
     /**
-     * Creates a repository.
+     * Creates a repository with a default {@link AccessPolicy}.
      * <p/>
      * @param cache to query for cached items
      * @param defaultAccessPolicy that determines default interaction with cache
      */
-    // TODO: Comment
     public Repository(@NonNull C cache, @AccessPolicy int defaultAccessPolicy) {
         mCache = cache;
         mDefaultAccessPolicy = defaultAccessPolicy;
@@ -95,31 +93,29 @@ public final class Repository<T, C> {
     }
 
     /**
-     * Creates a repository.
+     * Creates a repository with {@link #DEFAULT_ACCESS_POLICY} as its policy.
      * <p/>
      * @param cache to query for cached items
-     * @param defaultAccessPolicy that determines default interaction with cache
      */
-    // TODO: Comment
     public Repository(@NonNull C cache) {
         this(cache, DEFAULT_ACCESS_POLICY);
     }
 
     /**
-     * Queries the corresponding information provider, either network or cache, in order to retrieve
-     * information and handle it to the user.
+     * Creates an {@link Query<T>} that when run queries the corresponding information provider,
+     * either network or cache depending on the conditions, in order to retrieve information and
+     * handle it to the user.
      * <p/>
      * The decisions regarding the interaction with the network and/or cache are governed by the
      * {@link AccessPolicy} given. Check their description for proper usage.
      *
-     * @param policy policy to use for the query
+     * @param policy to use for the query
      * @param call request that retrieves asked information
-     * @param callback that notifies the result of the query
+     * @param queryStrategy that determines how to react to local/network actions
      */
-    // TODO: Comment
-    public RepositoryQuery<T> query(@AccessPolicy final int policy, @NonNull final Call<T> call,
-                                    @NonNull final QueryStrategy<T, C> queryStrategy) {
-        return new RepositoryQuery<T>() {
+    public Query<T> query(@AccessPolicy final int policy, @NonNull final Call<T> call,
+                          @NonNull final QueryStrategy<T, C> queryStrategy) {
+        return new Query<T>() {
             @Override
             public void run() {
                 if (!accessCache(policy)) {
@@ -138,34 +134,59 @@ public final class Repository<T, C> {
     }
 
     /**
-     * Queries the corresponding information provider, either network or cache, in order to retrieve
-     * information and handle it to the user with the default {@link AccessPolicy}.
+     * Same as in {@link #query(int, Call, QueryStrategy)} but using the default access policy
+     * with which the instance was created.
      *
      * @param call request that retrieves asked information
-     * @param callback that notifies the result of the query
+     * @param queryStrategy that determines how to react to local/network actions
+     *
+     * @see #query(int, Call, QueryStrategy)
      */
-    // TODO: Comment
-    public RepositoryQuery<T> query(@NonNull Call<T> call, @NonNull final QueryStrategy<T, C> queryStrategy) {
+    public Query<T> query(@NonNull Call<T> call, @NonNull final QueryStrategy<T, C> queryStrategy) {
         return query(mDefaultAccessPolicy, call, queryStrategy);
     }
 
-    // TODO: Comment
+    /**
+     * Queries the corresponding information provider, either network or cache depending on the
+     * conditions, in order to retrieve information and handle it to the user.
+     * <p/>
+     * Shorthand for calling {@link #query(int, Call, QueryStrategy)} and executing it immediately
+     * with {@link IRepositoryCallback#onSuccess(T)} and {@link IRepositoryCallback#onError(Throwable)}
+     * as its success and error callbacks.
+     *
+     * @param policy to use for the query
+     * @param call request that retrieves asked information
+     * @param queryStrategy that determines how to react to local/network actions
+     * @param callback to use for notification
+     *
+     * @see #query(int, Call, QueryStrategy)
+     */
     public void query(@AccessPolicy final int policy, @NonNull final Call<T> call,
-                      @NonNull QueryStrategy<T, C> strategy,
+                      @NonNull QueryStrategy<T, C> queryStrategy,
                       @NonNull final IRepositoryCallback<T> callback) {
-        RepositoryQuery<T> repositoryQuery = query(policy, call, strategy);
+        Query<T> repositoryQuery = query(policy, call, queryStrategy);
 
         repositoryQuery.onSuccess(callback::onSuccess).onError(callback::onError).run();
     }
 
-    // TODO: Comment
-    public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> strategy,
+    /**
+     * Same as in {@link #query(int, Call, QueryStrategy, IRepositoryCallback)} but using the
+     * default access policy with which the instance was created.
+     *
+     * @param call request that retrieves asked information
+     * @param queryStrategy that determines how to react to local/network actions
+     * @param callback to use for notification
+     *
+     * @see #query(int, Call, QueryStrategy, IRepositoryCallback)
+     */
+    public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> queryStrategy,
                       @NonNull final IRepositoryCallback<T> callback) {
-        query(call, strategy, callback);
+        query(call, queryStrategy, callback);
     }
 
     /**
      * @param policy policy to check
+     *
      * @return wether the policy indicates that the query should access the cache.
      */
     private boolean accessCache(@AccessPolicy int policy) {
@@ -177,13 +198,14 @@ public final class Repository<T, C> {
      * {@link QueryStrategy#save(Object, Object)} is called to impact the change.
      *
      * @param call request to be done
-     * @param callback that notifies the result of the query
+     * @param queryStrategy that determines how to react to local/network actions
+     * @param repositoryQuery to notify to
+     *
      * @throws IllegalStateException if the <code>call</code> is either executed or cancelled.
      */
-    // TODO: Comment
     private void fetchData(@NonNull final Call<T> call,
                            @NonNull final QueryStrategy<T, C> queryStrategy,
-                           @NonNull final RepositoryQuery<T> repositoryQuery) {
+                           @NonNull final Query<T> repositoryQuery) {
         if (call.isExecuted() || call.isCanceled()) {
             throw new IllegalStateException("Call should be ready to use");
         }
@@ -239,4 +261,53 @@ public final class Repository<T, C> {
 
     }
 
+    /**
+     * Awaits the order to execute logic of the repository query the user created. It exposes
+     * {@link Consumer<T>} instances for both success and error to be notified.
+     * <p/>
+     * Note that calling {@link #onSuccess(Consumer)} and {@link #onError(Consumer)} is not
+     * mandatory for calling {@link #run()} in case a user doesn't care about the result.
+     *
+     * @param <T> type of elements to process on success
+     */
+    public abstract static class Query<T> implements Runnable {
+
+        private Consumer<T> successConsumer;
+        private Consumer<Throwable> errorConsumer;
+
+        private Query() {}
+
+        /**
+         * Sets the success {@link Consumer<T>}.
+         *
+         * @param successConsumer to use in case the query succeeds
+         *
+         * @return the same instance
+         */
+        public Query<T> onSuccess(@NonNull Consumer<T> successConsumer) {
+            this.successConsumer = successConsumer;
+            return this;
+        }
+
+        /**
+         * Sets the error {@link Consumer<Throwable>}.
+         *
+         * @param errorConsumer to use in case the query fails
+         *
+         * @return the same instance
+         */
+        public Query<T> onError(@NonNull Consumer<Throwable> errorConsumer) {
+            this.errorConsumer = errorConsumer;
+            return this;
+        }
+
+        void doOnSuccess(T data) {
+            if (successConsumer != null) successConsumer.accept(data);
+        }
+
+        void doOnError(Throwable throwable) {
+            if (errorConsumer != null) errorConsumer.accept(throwable);
+        }
+
+    }
 }
