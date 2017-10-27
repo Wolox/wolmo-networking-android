@@ -46,51 +46,78 @@ An example instantiation and usage of the `Repository` class is the following.
 Consider the case of an app that needs to load a set of `Task`s and wants to fetch them locally first (See `Repository.AccessPolicy` for other policies). To create the necessary `Repository` these few lines of code are needed:
 
 ```
-mTaskRepository = new Repository.Builder<List<Task>, TaskCache>(cache, new TaskQueryStrategy())
-                .withDefaultAccessPolicy(Repository.CACHE_FIRST)
-                .build();
+mTaskRepository = new Repository(cache, Repository.CACHE_FIRST);
 ```
 
-Notice that the creation requires 2 things: a `TaskCache` and a `TaskQueryStrategy`.
+The `Repository.AccessPolicy` can be ommitted if you intend to use the configurable `Repository.DEFAULT_ACCESS_POLICY` as its access policy.
+
+Note that the creation *requires* one thing: a `TaskCache`.
 
 We won't dwell in the details of what a `TaskCache` should be. The advantage is that it can be **anything the users of the library consider a cache**. It can be implemented atop of memory, SQLite database, a faster web service, etc.
 
-On the other hand, a `QueryStrategy` is mechanism that defines what to do in case the `Repository` determines it should either `read`, `invalidate` or `save` to the cache implementation.
+On the other hand, a `QueryStrategy` is mechanism that defines what to do in case the `Repository` determines it should either `readLocalSource` or `consumeRemoteSource`.
 
 ```
 public class TaskQueryStrategy extends Repository.QueryStrategy<List<Task>, TaskCache> {
+
     @Nullable
     @Override
-    public List<Task> read(@NonNull TaskCache cache) {
+    public List<Task> readLocalSource(@NonNull TaskCache cache) {
         // Read from cache
         // Important to notice that it should return null when there's a cache miss.
      }
 
      @Override
-     public void invalidate(@NonNull TaskCache cache) {
-         // Invalidate tasks in cache
-     }
-
-     @Override
-     public void save(@NonNull List<Task> tasks, @NonNull TaskCache cache) {
+     public void consumeRemoteSource(@NonNull List<Task> tasks, @NonNull TaskCache cache) {
          // Save tasks to cache
      }
+     
 }
 ```
 
-*The generics are left for the example's sake*.
-
 Finally, last step is to `query` the newly created `Repository<Task, TaskCache>` to then act on the `Task`s information retrieved.
+
+There are 2 flavors of `Repository#query`, that each offers an overload for passing an `AccessPolicy` to use for that particular `query`.
+
+* Executing the query logic immediately:
 
 ```
 mTaskRepository.query(
     getService(TaskService.class).fetchTasks(),
-    new RepositoryCallback<List<Task>> {
+    new TaskQueryStrategy() {
+        // Implementation
+    },
+    new IRepositoryCallback<List<Task>> {
         // Callback Implementation
-    }
+    });
 ```
 
-Information retrieval is notified through `RepositoryCallback#onSuccess(T)` and errors through `RepositoryCallback#onError(int)`. The user can then execute the required behaviour after said events. Whether it fetched the information from network, memory, disk or any other source is transparent.
+Information retrieval is notified through `IRepositoryCallback#onSuccess(T)` and errors through `IRepositoryCallback#onError(Throwable)`. The user can then execute the required behaviour after said events. Whether it fetched the information from network, memory, disk or any other source is transparent.
+
+* Getting a hold of a `Repository.Query` object:
+
+```
+Query tasksQuery = mTaskRepository.query(
+    getService(TaskService.class).fetchTasks(),
+    new TaskQueryStrategy() {
+        // Implementation
+    });
+```
+
+The `Repository.Query` holds the logic of the query ready to be `Repository.Query#run`. This class implements `Runnable` which allows integration with several other APIs.
+ 
+This allows the users of the class to do:
+
+```
+tasksQuery
+    .onSuccess((T data) -> {// Implement})
+    .onError((Throwable error) -> {// Implement})
+    .run();
+```
+
+The SAM interfaces for `Repository.Query#onSuccess` and `Repository.Query#onError` are `Consumer<T>` and `Consumer<Throwable>` respectively. 
+
+Important notew: We are using a custom `Customer` class. When the `Java 8` functional interfaces are supported everywhere officially, the implementation will use those.
 
 ### Dependencies
 
