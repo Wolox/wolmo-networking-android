@@ -123,7 +123,7 @@ public final class Repository<T, C> {
                     return;
                 }
 
-                T cachedData = queryStrategy.read(mCache);
+                T cachedData = queryStrategy.onReadLocalSource(mCache);
                 if (cachedData != null) {
                     doOnSuccess(cachedData);
                 } else if (policy == CACHE_ONLY) {
@@ -195,7 +195,7 @@ public final class Repository<T, C> {
 
     /**
      * Makes a request and notifies accordingly. In case of success,
-     * {@link QueryStrategy#save(Object, Object)} is called to impact the change.
+     * {@link QueryStrategy#onConsumeRemoteSource(Object, Object)} is called to impact the change.
      *
      * @param call request to be done
      * @param queryStrategy that determines how to react to local/network actions
@@ -213,7 +213,7 @@ public final class Repository<T, C> {
         mCallCollapser.enqueue(call, new NetworkCallback<T>() {
             @Override
             public void onResponseSuccessful(T data) {
-                queryStrategy.save(data, mCache);
+                queryStrategy.onConsumeRemoteSource(data, mCache);
                 repositoryQuery.doOnSuccess(data);
             }
 
@@ -240,24 +240,24 @@ public final class Repository<T, C> {
     public interface QueryStrategy<T, C> {
 
         /**
-         * Used whenever information needs to be retrieved.
+         * Called whenever information needs to be retrieved locally.
          *
          * @param cache to retrieve information from
          *
          * @return Data retrieved. Returning <code>null</code> means it was a cache miss.
          */
-        // TODO: Rename
         @Nullable
-        T read(@NonNull C cache);
+        T onReadLocalSource(@NonNull C cache);
 
         /**
          * Is called into action for saving data fetched from network.
+         * <p/>
+         * The {@link C cache} is provided in order to be able to save the data or similar actions.
          *
          * @param data to store
-         * @param cache to save data to
+         * @param cache to interact with
          */
-        // TODO: Rename
-        void save(@NonNull T data, @NonNull C cache);
+        void onConsumeRemoteSource(@NonNull T data, @NonNull C cache);
 
     }
 

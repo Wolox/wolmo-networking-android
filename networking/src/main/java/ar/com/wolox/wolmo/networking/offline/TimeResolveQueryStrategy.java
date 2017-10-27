@@ -32,7 +32,7 @@ public abstract class TimeResolveQueryStrategy<T, C> implements Repository.Query
 
     @Nullable
     @Override
-    public T read(@NonNull C cache) {
+    public T onReadLocalSource(@NonNull C cache) {
         if (shouldInvalidateCache()) {
             invalidate(cache);
             return null;
@@ -44,7 +44,7 @@ public abstract class TimeResolveQueryStrategy<T, C> implements Repository.Query
     public abstract void invalidate(@NonNull C cache);
 
     @Override
-    public void save(@NonNull T data, @NonNull C cache) {
+    public void onConsumeRemoteSource(@NonNull T data, @NonNull C cache) {
         updateRefreshMoment();
 
         refresh(data, cache);
