@@ -97,7 +97,7 @@ Information retrieval is notified through `IRepositoryCallback#onSuccess(T)` and
 * Getting a hold of a `Repository.Query` object:
 
 ```
-Query tasksQuery = mTaskRepository.query(
+Query<List<Task>> tasksQuery = mTaskRepository.query(
     getService(TaskService.class).fetchTasks(),
     new TaskQueryStrategy() {
         // Implementation
