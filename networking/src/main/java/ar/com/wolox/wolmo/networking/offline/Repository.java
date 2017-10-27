@@ -123,7 +123,7 @@ public final class Repository<T, C> {
                     return;
                 }
 
-                T cachedData = queryStrategy.onReadLocalSource(mCache);
+                T cachedData = queryStrategy.readLocalSource(mCache);
                 if (cachedData != null) {
                     doOnSuccess(cachedData);
                 } else if (policy == CACHE_ONLY) {
@@ -195,7 +195,7 @@ public final class Repository<T, C> {
 
     /**
      * Makes a request and notifies accordingly. In case of success,
-     * {@link QueryStrategy#onConsumeRemoteSource(Object, Object)} is called to impact the change.
+     * {@link QueryStrategy#consumeRemoteSource(Object, Object)} is called to impact the change.
      *
      * @param call request to be done
      * @param queryStrategy that determines how to react to local/network actions
@@ -213,7 +213,7 @@ public final class Repository<T, C> {
         mCallCollapser.enqueue(call, new NetworkCallback<T>() {
             @Override
             public void onResponseSuccessful(T data) {
-                queryStrategy.onConsumeRemoteSource(data, mCache);
+                queryStrategy.consumeRemoteSource(data, mCache);
                 repositoryQuery.doOnSuccess(data);
             }
 
@@ -247,7 +247,7 @@ public final class Repository<T, C> {
          * @return Data retrieved. Returning <code>null</code> means it was a cache miss.
          */
         @Nullable
-        T onReadLocalSource(@NonNull C cache);
+        T readLocalSource(@NonNull C cache);
 
         /**
          * Is called into action for saving data fetched from network.
@@ -257,7 +257,7 @@ public final class Repository<T, C> {
          * @param data to store
          * @param cache to interact with
          */
-        void onConsumeRemoteSource(@NonNull T data, @NonNull C cache);
+        void consumeRemoteSource(@NonNull T data, @NonNull C cache);
 
     }
 
