@@ -110,7 +110,7 @@ This allows the users of the class to do:
 
 ```
 tasksQuery
-    .onSuccess((T data) -> {// Implement})
+    .onSuccess((List<Task> tasks) -> {// Implement})
     .onError((Throwable error) -> {// Implement})
     .run();
 ```
@@ -118,6 +118,8 @@ tasksQuery
 The SAM interfaces for `Repository.Query#onSuccess` and `Repository.Query#onError` are `Consumer<T>` and `Consumer<Throwable>` respectively. 
 
 Important notew: We are using a custom `Customer` class. When the `Java 8` functional interfaces are supported everywhere officially, the implementation will use those.
+
+The library also offers a tool to handle the 'dirty' cache common problem. Users can create `TimeResolveQueryStrategy` which already handles that case for them. Instances of this class are created with a delta time that is the time left for the local data to be considered 'clean'. When the said time has passed since the last remote data fetch, the `TimeResolveQueryStrategy` forces the remote query.
 
 ### Dependencies
 
