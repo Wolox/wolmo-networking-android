@@ -23,17 +23,18 @@
 package ar.com.wolox.wolmo.networking.offline;
 
 import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
+import ar.com.wolox.wolmo.networking.exception.CacheMissException;
+import ar.com.wolox.wolmo.networking.exception.NetworkResourceException;
 import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
+import ar.com.wolox.wolmo.networking.utils.Consumer;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 
@@ -45,14 +46,11 @@ import retrofit2.Call;
  */
 public final class Repository<T, C> {
 
-    public static final int INTERNAL_ERROR_CODE = 666;
-    public static final int CACHE_MISS_ERROR_CODE = 888;
-
     /**
-     * Flags for cache interaction control.
+     * Flags for cache access control.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({CACHE_NONE, CACHE_FIRST, CACHE_ONLY, TIME_RESOLVE})
+    @IntDef({CACHE_NONE, CACHE_FIRST, CACHE_ONLY})
     public @interface AccessPolicy {}
 
     /**
@@ -71,100 +69,124 @@ public final class Repository<T, C> {
     public static final int CACHE_ONLY = 3;
 
     /**
-     * Checks whether the refresh delta time has passed.
-     * If it has, it refreshes cache by getting data from API. Else, it returns cache data.
-     * </p>
-     * For example, if the field returns 2000, then 2 seconds have to elapse before the data
-     * is considered 'dirty'.
-     */
-    public static final int TIME_RESOLVE = 4;
-
-    /**
-     * Default refresh delta time. Users can modify it to set the default refresh delta time for
-     * future created instances of {@link Repository}.
-     */
-    public static long DEFAULT_REFRESH_DELTA_TIME = TimeUnit.DAYS.toMillis(1);
-
-    /**
      * Default {@link AccessPolicy}. Users can modify it to set the defalt policy for future
      * instances of {@link Repository}.
      */
-    public static @AccessPolicy int DEFAULT_ACCESS_POLICY = TIME_RESOLVE;
+    public static @AccessPolicy int DEFAULT_ACCESS_POLICY = CACHE_FIRST;
 
     private static ICallCollapser CALL_COLLAPSER_INSTANCE = new BaseCallCollapser();
 
     private final C mCache;
-    private final QueryStrategy<T, C> mQueryStrategy;
     private final @AccessPolicy int mDefaultAccessPolicy;
-    private final long mRefreshDeltaInMillis;
     private final ICallCollapser mCallCollapser;
 
-    private long mLastRefreshMoment;
-
     /**
-     * Creates a repository.
+     * Creates a repository with a default {@link AccessPolicy}.
      * <p/>
-     * Users of this class must use {@link Builder} to instantiate it.
      * @param cache to query for cached items
-     * @param queryStrategy to use when interacting with cache
      * @param defaultAccessPolicy that determines default interaction with cache
-     * @param refreshDeltaInMillis Time interval up-to-date by the {@link #TIME_RESOLVE} policy.
      */
-    private Repository(@NonNull C cache, @NonNull QueryStrategy<T, C> queryStrategy,
-                       @AccessPolicy int defaultAccessPolicy,
-                       @IntRange(from = 1) long refreshDeltaInMillis) {
+    public Repository(@NonNull C cache, @AccessPolicy int defaultAccessPolicy) {
         mCache = cache;
-        mQueryStrategy = queryStrategy;
         mDefaultAccessPolicy = defaultAccessPolicy;
-        mRefreshDeltaInMillis = refreshDeltaInMillis;
         mCallCollapser = CALL_COLLAPSER_INSTANCE;
-        mLastRefreshMoment = System.currentTimeMillis();
     }
 
     /**
-     * Queries the corresponding information provider, either network or cache, in order to retrieve
-     * information and handle it to the user.
+     * Creates a repository with {@link #DEFAULT_ACCESS_POLICY} as its policy.
+     * <p/>
+     * @param cache to query for cached items
+     */
+    public Repository(@NonNull C cache) {
+        this(cache, DEFAULT_ACCESS_POLICY);
+    }
+
+    /**
+     * Creates an {@link Query<T>} that when run queries the corresponding information provider,
+     * either network or cache depending on the conditions, in order to retrieve information and
+     * handle it to the user.
      * <p/>
      * The decisions regarding the interaction with the network and/or cache are governed by the
      * {@link AccessPolicy} given. Check their description for proper usage.
      *
-     * @param policy policy to use for the query
+     * @param policy to use for the query
      * @param call request that retrieves asked information
-     * @param callback that notifies the result of the query
+     * @param queryStrategy that determines how to react to local/network actions
      */
-    public void query(@AccessPolicy int policy, @NonNull Call<T> call,
-                      @NonNull IRepositoryCallback<T> callback) {
-        if (accessCache(policy)) {
-            T cachedData = mQueryStrategy.read(mCache);
-            if (cachedData != null) {
-                if (shouldInvalidateCache(policy)) {
-                    mQueryStrategy.invalidate(mCache);
-                } else {
-                    callback.onSuccess(cachedData);
+    public Query<T> query(@AccessPolicy final int policy, @NonNull final Call<T> call,
+                          @NonNull final QueryStrategy<T, C> queryStrategy) {
+        return new Query<T>() {
+            @Override
+            public void run() {
+                if (!accessCache(policy)) {
+                    fetchData(call, queryStrategy, this);
                     return;
                 }
-            } else if (policy == CACHE_ONLY) {
-                callback.onError(CACHE_MISS_ERROR_CODE);
-                return;
-            }
-        }
 
-        fetchData(call, callback);
+                T cachedData = queryStrategy.readLocalSource(mCache);
+                if (cachedData != null) {
+                    doOnSuccess(cachedData);
+                } else if (policy == CACHE_ONLY) {
+                    doOnError(new CacheMissException());
+                }
+            }
+        };
     }
 
     /**
-     * Queries the corresponding information provider, either network or cache, in order to retrieve
-     * information and handle it to the user with the default {@link AccessPolicy}.
+     * Same as in {@link #query(int, Call, QueryStrategy)} but using the default access policy
+     * with which the instance was created.
      *
      * @param call request that retrieves asked information
-     * @param callback that notifies the result of the query
+     * @param queryStrategy that determines how to react to local/network actions
+     *
+     * @see #query(int, Call, QueryStrategy)
      */
-    public void query(@NonNull Call<T> call, @NonNull IRepositoryCallback<T> callback) {
-        query(mDefaultAccessPolicy, call, callback);
+    public Query<T> query(@NonNull Call<T> call, @NonNull final QueryStrategy<T, C> queryStrategy) {
+        return query(mDefaultAccessPolicy, call, queryStrategy);
+    }
+
+    /**
+     * Queries the corresponding information provider, either network or cache depending on the
+     * conditions, in order to retrieve information and handle it to the user.
+     * <p/>
+     * Shorthand for calling {@link #query(int, Call, QueryStrategy)} and executing it immediately
+     * with {@link IRepositoryCallback#onSuccess(T)} and {@link IRepositoryCallback#onError(Throwable)}
+     * as its success and error callbacks.
+     *
+     * @param policy to use for the query
+     * @param call request that retrieves asked information
+     * @param queryStrategy that determines how to react to local/network actions
+     * @param callback to use for notification
+     *
+     * @see #query(int, Call, QueryStrategy)
+     */
+    public void query(@AccessPolicy final int policy, @NonNull final Call<T> call,
+                      @NonNull QueryStrategy<T, C> queryStrategy,
+                      @NonNull final IRepositoryCallback<T> callback) {
+        Query<T> repositoryQuery = query(policy, call, queryStrategy);
+
+        repositoryQuery.onSuccess(callback::onSuccess).onError(callback::onError).run();
+    }
+
+    /**
+     * Same as in {@link #query(int, Call, QueryStrategy, IRepositoryCallback)} but using the
+     * default access policy with which the instance was created.
+     *
+     * @param call request that retrieves asked information
+     * @param queryStrategy that determines how to react to local/network actions
+     * @param callback to use for notification
+     *
+     * @see #query(int, Call, QueryStrategy, IRepositoryCallback)
+     */
+    public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> queryStrategy,
+                      @NonNull final IRepositoryCallback<T> callback) {
+        query(call, queryStrategy, callback);
     }
 
     /**
      * @param policy policy to check
+     *
      * @return wether the policy indicates that the query should access the cache.
      */
     private boolean accessCache(@AccessPolicy int policy) {
@@ -172,30 +194,18 @@ public final class Repository<T, C> {
     }
 
     /**
-     * Sets {@link #mLastRefreshMoment} to the current moment in time.
-     */
-    private void updateRefreshMoment() {
-        mLastRefreshMoment = System.currentTimeMillis();
-    }
-
-    /**
-     * @param policy policy taken
-     * @return whether cached data should be invalidated.
-     */
-    private boolean shouldInvalidateCache(@AccessPolicy int policy) {
-        return policy == TIME_RESOLVE &&
-                (System.currentTimeMillis() - mLastRefreshMoment) >= mRefreshDeltaInMillis;
-    }
-
-    /**
      * Makes a request and notifies accordingly. In case of success,
-     * {@link QueryStrategy#save(Object, Object)} is called to impact the change.
+     * {@link QueryStrategy#consumeRemoteSource(Object, Object)} is called to impact the change.
      *
      * @param call request to be done
-     * @param callback that notifies the result of the query
+     * @param queryStrategy that determines how to react to local/network actions
+     * @param repositoryQuery to notify to
+     *
      * @throws IllegalStateException if the <code>call</code> is either executed or cancelled.
      */
-    private void fetchData(@NonNull Call<T> call, @NonNull final IRepositoryCallback<T> callback) {
+    private void fetchData(@NonNull final Call<T> call,
+                           @NonNull final QueryStrategy<T, C> queryStrategy,
+                           @NonNull final Query<T> repositoryQuery) {
         if (call.isExecuted() || call.isCanceled()) {
             throw new IllegalStateException("Call should be ready to use");
         }
@@ -203,19 +213,19 @@ public final class Repository<T, C> {
         mCallCollapser.enqueue(call, new NetworkCallback<T>() {
             @Override
             public void onResponseSuccessful(T data) {
-                mQueryStrategy.save(data, mCache);
-                updateRefreshMoment();
-                callback.onSuccess(data);
+                queryStrategy.consumeRemoteSource(data, mCache);
+                repositoryQuery.doOnSuccess(data);
             }
 
             @Override
             public void onResponseFailed(ResponseBody responseBody, int code) {
-                callback.onError(code);
+                repositoryQuery.doOnError(
+                        new NetworkResourceException(call.request().url().toString(), code));
             }
 
             @Override
             public void onCallFailure(Throwable throwable) {
-                callback.onError(INTERNAL_ERROR_CODE);
+                repositoryQuery.doOnError(throwable);
             }
         });
     }
@@ -227,93 +237,77 @@ public final class Repository<T, C> {
      * @param <T> class which is used for interacting with the {@link C} cache
      * @param <C> type of cache to use
      */
-    public static abstract class QueryStrategy<T, C> {
+    public interface QueryStrategy<T, C> {
 
         /**
-         * Used whenever information needs to be retrieved.
+         * Called whenever information needs to be retrieved locally.
          *
          * @param cache to retrieve information from
          *
          * @return Data retrieved. Returning <code>null</code> means it was a cache miss.
          */
         @Nullable
-        public abstract T read(@NonNull C cache);
-
-        /**
-         * Executed in case the cache information, in relation to a query, should be cleared.
-         *
-         * @param cache to invalidate data in
-         */
-        public abstract void invalidate(@NonNull C cache);
+        T readLocalSource(@NonNull C cache);
 
         /**
          * Is called into action for saving data fetched from network.
+         * <p/>
+         * The {@link C cache} is provided in order to be able to save the data or similar actions.
          *
          * @param data to store
-         * @param cache to save data to
+         * @param cache to interact with
          */
-        public abstract void save(@NonNull T data, @NonNull C cache);
+        void consumeRemoteSource(@NonNull T data, @NonNull C cache);
 
     }
 
     /**
-     * Builder for {@link Repository}.
+     * Awaits the order to execute logic of the repository query the user created. It exposes
+     * {@link Consumer<T>} instances for both success and error to be notified.
      * <p/>
-     * Users must provide a cache object of type {@link C} and a {@link QueryStrategy} at creation.
-     * Every other parameter is optional.
+     * Note that calling {@link #onSuccess(Consumer)} and {@link #onError(Consumer)} is not
+     * mandatory for calling {@link #run()} in case a user doesn't care about the result.
      *
-     * @see #DEFAULT_ACCESS_POLICY
-     * @see #DEFAULT_REFRESH_DELTA_TIME
-     *
-     * @param <T> Type of elements to interact with
-     * @param <C> Type of cache to handle
+     * @param <T> type of elements to process on success
      */
-    public static final class Builder<T, C> {
+    public abstract static class Query<T> implements Runnable {
 
-        private final C mCache;
-        private final QueryStrategy<T, C> mQueryStrategy;
+        private Consumer<T> successConsumer;
+        private Consumer<Throwable> errorConsumer;
 
-        private int mDefaultAccessPolicy;
-        private long mRefreshDeltaInMillis;
-
-        public Builder(@NonNull C cache, @NonNull QueryStrategy<T, C> strategy) {
-            this.mCache = cache;
-            this.mQueryStrategy = strategy;
-            this.mDefaultAccessPolicy = DEFAULT_ACCESS_POLICY;
-            this.mRefreshDeltaInMillis = DEFAULT_REFRESH_DELTA_TIME;
-        }
+        private Query() {}
 
         /**
-         * Sets the default {@link AccessPolicy} for the future built instance to use.
+         * Sets the success {@link Consumer<T>}.
          *
-         * @param defaultAccessPolicy to set
-         * @return The same instance of the {@link Builder}
+         * @param successConsumer to use in case the query succeeds
+         *
+         * @return the same instance
          */
-        public final Builder<T, C> withDefaultAccessPolicy(@AccessPolicy int defaultAccessPolicy) {
-            this.mDefaultAccessPolicy = defaultAccessPolicy;
+        public Query<T> onSuccess(@NonNull Consumer<T> successConsumer) {
+            this.successConsumer = successConsumer;
             return this;
         }
 
         /**
-         * Sets the default refresh delta time for the future built instance to use.
+         * Sets the error {@link Consumer<Throwable>}.
          *
-         * @param refreshDeltaInMillis to set
-         * @return The same instance of the {@link Builder}
+         * @param errorConsumer to use in case the query fails
+         *
+         * @return the same instance
          */
-        public final Builder<T, C> withRefreshDelta(@IntRange(from = 1) long refreshDeltaInMillis) {
-            this.mRefreshDeltaInMillis = refreshDeltaInMillis;
+        public Query<T> onError(@NonNull Consumer<Throwable> errorConsumer) {
+            this.errorConsumer = errorConsumer;
             return this;
         }
 
-        /**
-         * @return A fully-fledged {@link Repository} with the configuration of the {@link Builder}
-         *          instance
-         */
-        public Repository<T, C> build() {
-            return new Repository<>(
-                    mCache, mQueryStrategy, mDefaultAccessPolicy, mRefreshDeltaInMillis);
+        void doOnSuccess(T data) {
+            if (successConsumer != null) successConsumer.accept(data);
+        }
+
+        void doOnError(Throwable throwable) {
+            if (errorConsumer != null) errorConsumer.accept(throwable);
         }
 
     }
-
 }
