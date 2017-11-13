@@ -26,12 +26,15 @@ import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ar.com.wolox.wolmo.networking.retrofit.serializer.BaseGsonBuilder;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -52,11 +55,19 @@ public abstract class RetrofitServices {
      */
     public void init() {
         mServices = new HashMap<>();
-        mRetrofit = new Retrofit.Builder()
+        mRetrofit = buildRetrofitInstance();
+    }
+
+    private Retrofit buildRetrofitInstance() {
+        Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
                 .baseUrl(getApiEndpoint())
-                .addConverterFactory(GsonConverterFactory.create(getGson()))
-                .client(getOkHttpClient())
-                .build();
+                .client(getOkHttpClient());
+
+        for (Converter.Factory converterFactory : getConverterFactories()) {
+            retrofitBuilder.addConverterFactory(converterFactory);
+        }
+
+        return retrofitBuilder.build();
     }
 
     /**
@@ -66,6 +77,24 @@ public abstract class RetrofitServices {
      */
     @NonNull
     public abstract String getApiEndpoint();
+
+    /**
+     * Allows configuration of the {@link Converter.Factory} to be used by {@link Retrofit}.
+     * The default implementation returns a list with a single {@link GsonConverterFactory}
+     * instance. The {@link} must not contain a {@code null} {@link Converter.Factory}.
+     * <p/>
+     * An important implicit aspect of what is returned in this method is that {@link Retrofit}
+     * iterates through the list <bold>in order</bold> to match a {@link okhttp3.ResponseBody}
+     * with a {@link Converter}.
+     * <p/>
+     * Implementations should pay attention to these because, for example,
+     * {@link GsonConverterFactory} <bold>always</bold> matches, thus preventing the fall-through.
+     *
+     * @return the {@link List} of {@link GsonConverterFactory} to use.
+     */
+    protected List<Converter.Factory> getConverterFactories() {
+        return Collections.singletonList(GsonConverterFactory.create(getGson()));
+    }
 
     /**
      * Returns an instance of Gson to use for conversion.
@@ -138,7 +167,7 @@ public abstract class RetrofitServices {
      * @param <T>   Service class
      * @return service
      */
-    public <T> T getService(@NonNull Class<T> clazz) {
+    public final <T> T getService(@NonNull Class<T> clazz) {
         if (!isInitialized()) throw new RuntimeException("RetrofitServices is not initialized! " +
                 "Must call init() at least once before calling getService(clazz)");
 
