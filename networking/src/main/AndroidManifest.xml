@@ -1,10 +1,9 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="ar.com.wolox.wolmo.networking">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ar.com.wolox.wolmo.networking">
 
     <application
         android:allowBackup="true"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme"/>
+        android:supportsRtl="true"/>
 
 </manifest>
