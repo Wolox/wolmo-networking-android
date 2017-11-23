@@ -39,6 +39,7 @@ public class CallUtils {
                                           @NonNull final Callback<T> callback,
                                           @IntRange(from = 0) long delay,
                                           @NonNull TimeUnit timeoutUnit) {
+        // Timer can be used safely since Retrofit callback is called on UiThread
         Timer pollingTimer = new Timer();
         pollWithDelay(tries, call, pollingCondition, callback,
                 timeoutUnit.toMillis(delay), pollingTimer);
