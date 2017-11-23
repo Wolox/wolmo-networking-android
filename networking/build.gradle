@@ -24,7 +24,7 @@ android {
 }
 
 buildscript {
-    ext.wolmo_version = 'v1.2.0'
+    ext.wolmo_version = 'v1.3.1'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
 }
