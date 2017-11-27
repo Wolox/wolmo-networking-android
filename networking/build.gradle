@@ -18,6 +18,11 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 buildscript {
@@ -25,29 +30,29 @@ buildscript {
     ext.wolmo_version = 'dagger-android-SNAPSHOT'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
-    ext.dagger_version = '2.12'
+    ext.dagger_version = '2.13'
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-    compile "com.github.Wolox:wolmo-core-android:$wolmo_version"
+    implementation "com.github.Wolox:wolmo-core-android:$wolmo_version"
 
     // Dagger
-    provided "com.google.dagger:dagger:$dagger_version"
+    //"com.google.dagger:dagger:$dagger_version"
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Third party
-    compile "com.squareup.retrofit2:retrofit:$retrofit_version"
-    compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    compile "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
-    compile "com.squareup.okhttp3:okhttp:$okhttp3_version"
-    compile 'joda-time:joda-time:2.9.9'
+    api "com.squareup.retrofit2:retrofit:$retrofit_version"
+    api "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    api "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
+    api "com.squareup.okhttp3:okhttp:$okhttp3_version"
+    api 'joda-time:joda-time:2.9.9'
 
     // Test
-    testCompile "junit:junit:4.12"
-    testCompile "org.mockito:mockito-inline:2.11.0" // Mockito inline adds support for mocking final classes and methods
-    testCompile "org.assertj:assertj-core:3.8.0"
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.mockito:mockito-inline:2.11.0" // Mockito inline adds support for mocking final classes and methods
+    testImplementation "org.assertj:assertj-core:3.8.0"
 
 }

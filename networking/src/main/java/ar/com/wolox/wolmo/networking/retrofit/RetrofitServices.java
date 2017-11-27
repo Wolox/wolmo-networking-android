@@ -65,7 +65,7 @@ public class RetrofitServices {
      * @return service
      */
     @SuppressWarnings("unchecked")
-    public <T> T getService(@NonNull Class<T> clazz) {
+    public final <T> T getService(@NonNull Class<T> clazz) {
         T service = (T) mServices.get(clazz);
         if (service != null) return service;
         service = mRetrofit.create(clazz);
