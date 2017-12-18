@@ -52,7 +52,10 @@ public class CallUtils {
                                            @NonNull final Callback<T> callback,
                                            @IntRange(from = 0) long delayInMillis,
                                            @NonNull final Timer pollingTimer) {
-        if (triesRemaining <= 0) callback.onFailure(call, new PollRunOutOfTriesException(call));
+        if (triesRemaining <= 0) {
+            callback.onFailure(call, new PollRunOutOfTriesException(call));
+            return;
+        }
 
         call.enqueue(new Callback<T>() {
             @Override
