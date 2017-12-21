@@ -185,7 +185,7 @@ public final class Repository<T, C> {
      */
     public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> queryStrategy,
                       @NonNull final IRepositoryCallback<T> callback) {
-        query(call, queryStrategy, callback);
+        query(mDefaultAccessPolicy, call, queryStrategy, callback);        
     }
 
     /**
