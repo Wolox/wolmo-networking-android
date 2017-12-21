@@ -69,4 +69,13 @@ public class OkHttpClientModuleTest {
         assertThat(client).isNotNull();
         verify(okHttpBuilderSpy, times(1)).build();
     }
+
+    @Test
+    public void provideOkHttpClientBuilderShouldReturnNewInstance() {
+        OkHttpClient.Builder builder1 = OkHttpClientModule.provideOkHttpClientBuilder();
+        OkHttpClient.Builder builder2 = OkHttpClientModule.provideOkHttpClientBuilder();
+
+        assertThat(builder1).isNotEqualTo(builder2);
+        assertThat(builder1).isNotSameAs(builder2);
+    }
 }

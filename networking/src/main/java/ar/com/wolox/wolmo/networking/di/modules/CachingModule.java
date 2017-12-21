@@ -15,7 +15,7 @@ public class CachingModule {
 
     @Provides
     @NetworkingScope
-    ICallCollapser provideBaseCallCollapser() {
+    static ICallCollapser provideBaseCallCollapser() {
         return new BaseCallCollapser();
     }
 

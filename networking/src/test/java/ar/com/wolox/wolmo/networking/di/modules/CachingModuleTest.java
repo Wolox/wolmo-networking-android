@@ -28,6 +28,10 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
+import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
+
+import org.bouncycastle.jcajce.provider.symmetric.ARC4;
 import org.junit.Test;
 
 import okhttp3.OkHttpClient;
@@ -35,29 +39,15 @@ import retrofit2.Retrofit;
 import retrofit2.Retrofit.Builder;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class NetworkingModuleTest {
+public class CachingModuleTest {
 
     @Test
-    public void provideRetrofitShouldConfigureBuilder() {
-        Builder builderSpy = spy(new Builder());
-        OkHttpClient clientMock = mock(OkHttpClient.class);
-        GsonConverterFactory converterFactoryMock = mock(GsonConverterFactory.class);
+    public void provideBaseCallCollapserShouldReturnNewInstance() {
+        ICallCollapser callCollapser1 = CachingModule.provideBaseCallCollapser();
+        ICallCollapser callCollapser2 = CachingModule.provideBaseCallCollapser();
 
-        Retrofit retrofit = NetworkingModule.provideRetrofit(builderSpy, "http://web.com",
-                converterFactoryMock, clientMock);
-
-        assertThat(retrofit).isNotNull();
-        verify(builderSpy, times(1)).baseUrl(eq("http://web.com"));
-        verify(builderSpy, times(1)).addConverterFactory(eq(converterFactoryMock));
-        verify(builderSpy, times(1)).client(eq(clientMock));
-        verify(builderSpy, times(1)).build();
-    }
-
-    @Test
-    public void provideRetrofitBuilderShouldReturnNewInstance() {
-        Retrofit.Builder builder1 = NetworkingModule.provideRetrofitBuilder();
-        Retrofit.Builder builder2 = NetworkingModule.provideRetrofitBuilder();
-        assertThat(builder1).isNotSameAs(builder2);
-        assertThat(builder1).isNotEqualTo(builder2);
+        assertThat(callCollapser1).isNotSameAs(callCollapser2);
+        assertThat(callCollapser1).isNotEqualTo(callCollapser2);
+        assertThat(callCollapser1).isExactlyInstanceOf(BaseCallCollapser.class);
     }
 }

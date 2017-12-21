@@ -50,7 +50,7 @@ public final class Repository<T, C> {
      * Flags for cache access control.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({CACHE_NONE, CACHE_FIRST, CACHE_ONLY})
+    @IntDef({ CACHE_NONE, CACHE_FIRST, CACHE_ONLY })
     public @interface AccessPolicy {}
 
     /**
@@ -81,10 +81,12 @@ public final class Repository<T, C> {
     /**
      * Creates a repository with a default {@link AccessPolicy}.
      * <p/>
+     *
      * @param cache to query for cached items
      * @param defaultAccessPolicy that determines default interaction with cache
      */
-    public Repository(@NonNull C cache, @NonNull ICallCollapser callCollapser, @AccessPolicy int defaultAccessPolicy) {
+    public Repository(@NonNull C cache, @NonNull ICallCollapser callCollapser,
+                      @AccessPolicy int defaultAccessPolicy) {
         mCache = cache;
         mDefaultAccessPolicy = defaultAccessPolicy;
         mCallCollapser = callCollapser;
@@ -93,6 +95,7 @@ public final class Repository<T, C> {
     /**
      * Creates a repository with {@link #DEFAULT_ACCESS_POLICY} as its policy.
      * <p/>
+     *
      * @param cache to query for cached items
      */
     public Repository(@NonNull C cache, @NonNull ICallCollapser callCollapser) {
@@ -256,7 +259,6 @@ public final class Repository<T, C> {
          * @param cache to interact with
          */
         void consumeRemoteSource(@NonNull T data, @NonNull C cache);
-
     }
 
     /**
@@ -306,6 +308,5 @@ public final class Repository<T, C> {
         void doOnError(Throwable throwable) {
             if (errorConsumer != null) errorConsumer.accept(throwable);
         }
-
     }
 }

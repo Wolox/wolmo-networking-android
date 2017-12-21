@@ -116,7 +116,7 @@ public class RepositoryTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void queryDefaultAccessCacheAndNetworkFail() {
+    public void queryDefaultAccessCacheAndNetworkResponseError() {
         Call<String> callMock = new RetrofitCallMockBuilder().buildError(404);
 
         Consumer<Throwable> onErrorMock = mock(Consumer.class);
@@ -141,8 +141,9 @@ public class RepositoryTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void queryAccessCacheOnly() {
-        Call<String> callMock = mock(Call.class);
+    public void queryDefaultAccessCacheAndNetworkFail() {
+        Exception exception = new Exception();
+        Call<String> callMock = new RetrofitCallMockBuilder().buildFailure(exception);
 
         Consumer<Throwable> onErrorMock = mock(Consumer.class);
         Consumer<String> onSuccessMock = mock(Consumer.class);
@@ -151,14 +152,56 @@ public class RepositoryTest {
         when(mQueryStrategyMock.readLocalSource(any(String.class))).thenReturn(null);
 
         // Do things
-        Repository.Query<String> query =
-                mRepository.query(Repository.CACHE_ONLY, callMock, mQueryStrategyMock);
+        Repository.Query<String> query = mRepository.query(callMock, mQueryStrategyMock);
         query.onError(onErrorMock).onSuccess(onSuccessMock);
         query.run();
 
         // Verify cache read
         verify(mQueryStrategyMock, times(1)).readLocalSource(eq(mCache));
-        verify(onErrorMock, times(1)).accept(any(CacheMissException.class));
+
+        // Verify network request
+        verify(mCallCollapserMock, times(1)).enqueue(eq(callMock), any(Callback.class));
+        verify(mQueryStrategyMock, times(0)).consumeRemoteSource(eq("Response"), eq(mCache));
+        verify(onErrorMock, times(1)).accept(eq(exception));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void queryDefaultAccessCacheAndNetworkFailWithCallback() {
+        Exception exception = new Exception();
+        Call<String> callMock = new RetrofitCallMockBuilder().buildFailure(exception);
+        IRepositoryCallback<String> repositoryCallbackMock = mock(IRepositoryCallback.class);
+
+        // Cache status
+        when(mQueryStrategyMock.readLocalSource(any(String.class))).thenReturn(null);
+
+        // Do things
+        mRepository.query(callMock, mQueryStrategyMock, repositoryCallbackMock);
+
+        // Verify cache read
+        verify(mQueryStrategyMock, times(1)).readLocalSource(eq(mCache));
+
+        // Verify network request
+        verify(mCallCollapserMock, times(1)).enqueue(eq(callMock), any(Callback.class));
+        verify(mQueryStrategyMock, times(0)).consumeRemoteSource(eq("Response"), eq(mCache));
+        verify(repositoryCallbackMock, times(1)).onError(eq(exception));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void queryAccessCacheOnly() {
+        Call<String> callMock = mock(Call.class);
+        IRepositoryCallback<String> repositoryCallbackMock = mock(IRepositoryCallback.class);
+
+        // Cache status
+        when(mQueryStrategyMock.readLocalSource(any(String.class))).thenReturn(null);
+
+        // Do things
+        mRepository.query(Repository.CACHE_ONLY, callMock, mQueryStrategyMock, repositoryCallbackMock);
+
+        // Verify cache read
+        verify(mQueryStrategyMock, times(1)).readLocalSource(eq(mCache));
+        verify(repositoryCallbackMock, times(1)).onError(any(CacheMissException.class));
     }
 
     @Test
@@ -190,6 +233,23 @@ public class RepositoryTest {
     @SuppressWarnings("unchecked")
     public void queryAccessCacheNoneExecutedCall() {
         Call<String> callMock = new RetrofitCallMockBuilder().isExecuted(true).buildSuccess("Success");
+
+        Consumer<Throwable> onErrorMock = mock(Consumer.class);
+        Consumer<String> onSuccessMock = mock(Consumer.class);
+
+        // Cache status
+        when(mQueryStrategyMock.readLocalSource(any(String.class))).thenReturn(null);
+
+        // Do things
+        Repository.Query<String> query = mRepository.query(Repository.CACHE_NONE, callMock, mQueryStrategyMock);
+        query.onError(onErrorMock).onSuccess(onSuccessMock);
+        query.run();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @SuppressWarnings("unchecked")
+    public void queryAccessCacheNoneCancelledCall() {
+        Call<String> callMock = new RetrofitCallMockBuilder().isCanceled(true).buildSuccess("Success");
 
         Consumer<Throwable> onErrorMock = mock(Consumer.class);
         Consumer<String> onSuccessMock = mock(Consumer.class);

@@ -39,6 +39,7 @@ public class RetrofitCallMockBuilder<T> {
     private Exception mException;
     private long mRunBefore;
     private boolean mExecuted;
+    private boolean mCanceled;
 
     /**
      * Sets the HTTP method for the mock.
@@ -67,7 +68,7 @@ public class RetrofitCallMockBuilder<T> {
     }
 
     /**
-     * Set the status of the mock with the value provided.
+     * Set the executed status of the mock with the value provided.
      * When calling {@link Call#isExecuted()} the value of <b>executed</b> will be returned.
      *
      * @param executed If the mock was executed or not
@@ -76,6 +77,19 @@ public class RetrofitCallMockBuilder<T> {
      */
     public RetrofitCallMockBuilder isExecuted(boolean executed) {
         mExecuted = executed;
+        return this;
+    }
+
+    /**
+     * Set the cancel status of the mock with the value provided.
+     * When calling {@link Call#isCanceled()} ()} the value of <b>canceled</b> will be returned.
+     *
+     * @param canceled If the mock was executed or not
+     *
+     * @return Builder
+     */
+    public RetrofitCallMockBuilder isCanceled(boolean canceled) {
+        mCanceled = canceled;
         return this;
     }
 
@@ -164,6 +178,7 @@ public class RetrofitCallMockBuilder<T> {
         Request requestMock = buildOkHttpRequest();
         when(callMock.request()).thenReturn(requestMock);
         when(callMock.isExecuted()).thenReturn(mExecuted);
+        when(callMock.isCanceled()).thenReturn(mCanceled);
 
         // Custom answer
         doAnswer(buildCallAnswer(callMock)).when(callMock).enqueue(any(Callback.class));

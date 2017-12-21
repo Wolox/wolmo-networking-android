@@ -58,14 +58,14 @@ public class TimeResolveQueryStrategyTest {
     }
 
     @Test
-    public void testCacheReadFirstTime() throws Exception {
+    public void cacheReadFirstTime() throws Exception {
         Thread.sleep(REFRESH_DELTA + 5);
         assertThat(mTimeResolveQueryStrategySpy.readLocalSource("Cache")).isNull();
         verify(mTimeResolveQueryStrategySpy, times(1)).invalidate(eq("Cache"));
     }
 
     @Test
-    public void testCacheReadCleanCache() throws Exception {
+    public void cacheReadCleanCache() throws Exception {
         Thread.sleep(REFRESH_DELTA + 5);
         assertThat(mTimeResolveQueryStrategySpy.readLocalSource("Cache")).isNull();
         verify(mTimeResolveQueryStrategySpy, times(1)).invalidate(eq("Cache"));

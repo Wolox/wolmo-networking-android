@@ -43,6 +43,8 @@ import org.junit.Test;
 
 import java.lang.reflect.Type;
 
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class GsonModuleTest {
 
     @Test
@@ -100,5 +102,20 @@ public class GsonModuleTest {
         verify(builderMock, times(1)).setFieldNamingPolicy(eq(FieldNamingPolicy.UPPER_CAMEL_CASE));
         verify(builderMock, times(1)).registerTypeAdapter(eq(LocalDate.class),
                 any(LocalDateSerializer.class));
+    }
+
+    @Test
+    public void provideNewGsonBuilderShouldReturnNewInstance() {
+        GsonBuilder gsonBuilder1 = GsonModule.provideNewGsonBuilder();
+        GsonBuilder gsonBuilder2 = GsonModule.provideNewGsonBuilder();
+        assertThat(gsonBuilder1).isNotSameAs(gsonBuilder2);
+        assertThat(gsonBuilder1).isNotEqualTo(gsonBuilder2);
+    }
+
+    @Test
+    public void provideGsonConverterFactoryShouldUseProvidedGson() {
+        Gson gsonMock = mock(Gson.class);
+        GsonConverterFactory converterFactory = GsonModule.provideGsonConverterFactory(gsonMock);
+        assertThat(converterFactory).extracting("gson").containsOnly(gsonMock);
     }
 }
