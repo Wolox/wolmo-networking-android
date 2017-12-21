@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.retrofit;
 
 import android.support.annotation.NonNull;
@@ -61,7 +60,8 @@ public class RetrofitServices {
      * }
      *
      * @param clazz RetrofitService Class
-     * @param <T>   Service class
+     * @param <T> Service class
+     *
      * @return service
      */
     @SuppressWarnings("unchecked")

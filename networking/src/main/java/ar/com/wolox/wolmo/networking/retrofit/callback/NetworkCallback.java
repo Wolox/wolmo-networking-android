@@ -19,8 +19,11 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.retrofit.callback;
+
+import android.support.annotation.Nullable;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -33,6 +36,7 @@ import retrofit2.Response;
  *
  * @param <T> the type of object expected to be returned from the API call
  */
+@ParametersAreNonnullByDefault
 public abstract class NetworkCallback<T> implements Callback<T> {
 
     /**
@@ -62,10 +66,12 @@ public abstract class NetworkCallback<T> implements Callback<T> {
     /**
      * Checks whether the response is an auth error or not.
      * <p>
-     * You should override this method and check if the response is an auth error, then return <b>true</b> if it is.
+     * You should override this method and check if the response is an auth error, then return
+     * <b>true</b> if it is.
      * By default, this method returns <b>false</b>.
      *
      * @param response Retrofit response
+     *
      * @return <b>true</b> if the response is an auth error, <b>false</b> otherwise
      */
     protected boolean isAuthError(Response<T> response) {
@@ -88,18 +94,18 @@ public abstract class NetworkCallback<T> implements Callback<T> {
      * The server received the request, answered it and the response is not of an error type.
      *
      * @param response the API JSON response converted to a Java object.
-     *                 The API response code is included in the response object.
+     * The API response code is included in the response object.
      */
-    public abstract void onResponseSuccessful(T response);
+    public abstract void onResponseSuccessful(@Nullable T response);
 
     /**
      * Successful HTTP response from the server, but has an error body.
      * The server received the request, answered it and reported an error.
      *
      * @param responseBody The error body
-     * @param code         The error code
+     * @param code The error code
      */
-    public abstract void onResponseFailed(ResponseBody responseBody, int code);
+    public abstract void onResponseFailed(@Nullable ResponseBody responseBody, int code);
 
     /**
      * The HTTP request to the server failed on the local device, no data was transmitted.
@@ -109,5 +115,4 @@ public abstract class NetworkCallback<T> implements Callback<T> {
      * @param t A Throwable with the cause of the call failure
      */
     public abstract void onCallFailure(Throwable t);
-
 }

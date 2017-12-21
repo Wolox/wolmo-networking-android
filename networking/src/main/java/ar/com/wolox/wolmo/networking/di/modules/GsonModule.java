@@ -66,7 +66,8 @@ public class GsonModule {
 
         if (typeAdapters != null && typeAdapters.length > 0) {
             for (GsonTypeAdapter typeAdapter : typeAdapters) {
-                gsonBuilder.registerTypeAdapter(typeAdapter.getType(), typeAdapter.getTypeAdapter());
+                gsonBuilder
+                        .registerTypeAdapter(typeAdapter.getType(), typeAdapter.getTypeAdapter());
             }
         } else {
             gsonBuilder.registerTypeAdapter(LocalDate.class, new LocalDateSerializer());

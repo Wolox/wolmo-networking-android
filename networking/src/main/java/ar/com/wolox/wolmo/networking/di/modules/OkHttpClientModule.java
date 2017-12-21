@@ -32,7 +32,8 @@ import okhttp3.OkHttpClient;
 public class OkHttpClientModule {
 
     @Provides
-    static OkHttpClient provideOkHttpClient(OkHttpClient.Builder okHttpBuilder, @Nullable Interceptor... interceptors) {
+    static OkHttpClient provideOkHttpClient(OkHttpClient.Builder okHttpBuilder,
+            @Nullable Interceptor... interceptors) {
         if (interceptors != null) {
             for (Interceptor interceptor : interceptors) {
                 okHttpBuilder.addInterceptor(interceptor);

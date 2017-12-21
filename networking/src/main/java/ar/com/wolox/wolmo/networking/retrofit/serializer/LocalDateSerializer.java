@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.retrofit.serializer;
 
 import android.support.annotation.NonNull;
@@ -59,11 +58,12 @@ public class LocalDateSerializer implements JsonDeserializer<LocalDate>, JsonSer
      * This is useful for receiving data over the network.
      *
      * @param element a {@link JsonElement} representing a {@link java.util.Date}
+     *
      * @return returns an instance of {@link LocalDate} representing a {@link java.util.Date}
      */
     @Override
-    public LocalDate deserialize(JsonElement element, Type type,
-                                 JsonDeserializationContext context) throws JsonParseException {
+    public LocalDate deserialize(JsonElement element, Type type, JsonDeserializationContext context)
+            throws JsonParseException {
         initFormatter();
         String date = element.toString();
         if (date.startsWith("\"") && date.endsWith("\"")) {
@@ -77,6 +77,7 @@ public class LocalDateSerializer implements JsonDeserializer<LocalDate>, JsonSer
      * {@link JsonElement}. This is useful for sending the data over the network.
      *
      * @param date an instance of {@link LocalDate} to be serialized into a {@link JsonElement}
+     *
      * @return an instance of {@link JsonElement} representing a {@link LocalDate}
      */
     @Override
@@ -99,7 +100,8 @@ public class LocalDateSerializer implements JsonDeserializer<LocalDate>, JsonSer
      * This method returns the format of the Date that will be serialized/deserialized.
      * Usually, this should match the format that is being received from the API over the network.
      * <p>
-     * The default return value is the constant {@link #DEFAULT_DATE_FORMAT}, available in this class.
+     * The default return value is the constant {@link #DEFAULT_DATE_FORMAT}, available in this
+     * class.
      *
      * @return returns the format of the serialized Date
      */

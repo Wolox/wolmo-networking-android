@@ -28,7 +28,6 @@ import android.support.annotation.Nullable;
 
 import ar.com.wolox.wolmo.networking.exception.CacheMissException;
 import ar.com.wolox.wolmo.networking.exception.NetworkResourceException;
-import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
 import ar.com.wolox.wolmo.networking.utils.Consumer;
@@ -75,8 +74,6 @@ public final class Repository<T, C> {
      */
     public static @AccessPolicy int DEFAULT_ACCESS_POLICY = CACHE_FIRST;
 
-    private static ICallCollapser CALL_COLLAPSER_INSTANCE = new BaseCallCollapser();
-
     private final C mCache;
     private final @AccessPolicy int mDefaultAccessPolicy;
     private final ICallCollapser mCallCollapser;
@@ -87,10 +84,10 @@ public final class Repository<T, C> {
      * @param cache to query for cached items
      * @param defaultAccessPolicy that determines default interaction with cache
      */
-    public Repository(@NonNull C cache, @AccessPolicy int defaultAccessPolicy) {
+    public Repository(@NonNull C cache, @NonNull ICallCollapser callCollapser, @AccessPolicy int defaultAccessPolicy) {
         mCache = cache;
         mDefaultAccessPolicy = defaultAccessPolicy;
-        mCallCollapser = CALL_COLLAPSER_INSTANCE;
+        mCallCollapser = callCollapser;
     }
 
     /**
@@ -98,8 +95,8 @@ public final class Repository<T, C> {
      * <p/>
      * @param cache to query for cached items
      */
-    public Repository(@NonNull C cache) {
-        this(cache, DEFAULT_ACCESS_POLICY);
+    public Repository(@NonNull C cache, @NonNull ICallCollapser callCollapser) {
+        this(cache, callCollapser, DEFAULT_ACCESS_POLICY);
     }
 
     /**
@@ -225,7 +222,7 @@ public final class Repository<T, C> {
             }
 
             @Override
-            public void onCallFailure(Throwable throwable) {
+            public void onCallFailure(@NonNull Throwable throwable) {
                 repositoryQuery.doOnError(throwable);
             }
         });

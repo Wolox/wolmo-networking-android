@@ -51,5 +51,4 @@ public class NetworkCodes {
      * 5XX Server errors
      */
     public static final int ERROR_INTERNAL = 500;
-
 }

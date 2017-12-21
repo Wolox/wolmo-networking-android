@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.retrofit.interceptor;
 
 import android.support.annotation.NonNull;
@@ -46,14 +45,15 @@ public abstract class ApiRestInterceptor implements Interceptor {
      * of overwriting this one.
      *
      * @param chain an object provided by OkHTTP with data of the request being made
+     *
      * @return an instance of {@link Response} by OkHTTP
      */
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
-        Request.Builder requestBuilder = request.newBuilder()
-                .addHeader(CONTENT_TYPE_HEADER, "application/json")
-                .addHeader(ACCEPT_HEADER, "application/json");
+        Request.Builder requestBuilder =
+                request.newBuilder().addHeader(CONTENT_TYPE_HEADER, "application/json")
+                        .addHeader(ACCEPT_HEADER, "application/json");
         addHeaders(requestBuilder);
         request = requestBuilder.build();
         return chain.proceed(request);
@@ -63,7 +63,7 @@ public abstract class ApiRestInterceptor implements Interceptor {
      * A helper method to add custom headers to the network request.
      *
      * @param requestBuilder an instance of {@link Request.Builder} that you can use to add custom
-     *                       headers.
+     * headers.
      */
     public abstract void addHeaders(@NonNull Request.Builder requestBuilder);
 }

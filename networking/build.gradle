@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'jacoco-android'
+apply plugin: 'com.github.kt3k.coveralls'
 
 group = 'com.github.Wolox'
 
@@ -25,9 +26,16 @@ android {
     }
 }
 
+jacocoAndroidUnitTestReport {
+    excludes = defaultExcludes + ['**/*_Factory.class']
+}
+
+coveralls {
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReleaseUnitTestReport/jacocoTestReleaseUnitTestReport.xml"
+}
+
 buildscript {
-    // TODO We need to update the wolmo version when wolmo-core-android is merged
-    ext.wolmo_version = 'dagger-android-SNAPSHOT'
+    ext.wolmo_version = 'v2.0.0-rc1'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.13'
@@ -40,7 +48,6 @@ dependencies {
     implementation "com.github.Wolox:wolmo-core-android:$wolmo_version"
 
     // Dagger
-    //"com.google.dagger:dagger:$dagger_version"
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Third party
@@ -54,5 +61,5 @@ dependencies {
     testImplementation "junit:junit:4.12"
     testImplementation "org.mockito:mockito-inline:2.11.0" // Mockito inline adds support for mocking final classes and methods
     testImplementation "org.assertj:assertj-core:3.8.0"
-
+    testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp3_version"
 }

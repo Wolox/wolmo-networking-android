@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.optimizations;
 
 import android.support.annotation.NonNull;
@@ -44,9 +43,8 @@ public interface ICallCollapser {
     /**
      * Handles the API call avoiding repetitive and useless requests as much as possible
      *
-     * @param call     to be made to the API
+     * @param call to be made to the API
      * @param callback to be called after executing it
      */
     <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback);
-
 }

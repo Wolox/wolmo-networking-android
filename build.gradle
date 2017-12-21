@@ -14,6 +14,7 @@ buildscript {
         classpath 'com.google.gms:google-services:3.0.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.2'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
     }
 }
 

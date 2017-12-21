@@ -19,128 +19,164 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.optimizations;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import android.support.annotation.NonNull;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
+import ar.com.wolox.wolmo.networking.test_utils.RetrofitCallMockBuilder;
+import ar.com.wolox.wolmo.networking.test_utils.service.RetrofitTestService;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-/**
- * Thread-safe implementation of {@link ICallCollapser}.
- * Collapses GET requests into one by calling the first and reporting the result to every callback.
- */
-public class BaseCallCollapserTest implements ICallCollapser {
+public class BaseCallCollapserTest {
 
-    private static final String HTTP_METHOD_GET = "GET";
+    private BaseCallCollapser mBaseCallCollapser;
+    private MockWebServer mMockWebServer;
+    private Retrofit mRetrofit;
 
-    private final ConcurrentHashMap<String, Queue<Callback>> mGetCallbackQueues;
+    private Semaphore mSemaphore;
+    private Callback<String> mCallbackBase;
 
-    public BaseCallCollapserTest() {
-        mGetCallbackQueues = new ConcurrentHashMap<>();
-    }
+    @Before
+    public void beforeTest() throws IOException {
+        mBaseCallCollapser = new BaseCallCollapser();
+        mMockWebServer = new MockWebServer();
+        mMockWebServer.start();
 
-    /**
-     * Enqueues the call immediately if it's not a GET. This is done because only GET (read only)
-     * operations can be collapsed, writing operations should't be altered.
-     * <p>
-     * Collapsing the call means adding it to the queue of the same
-     * request, and executing it if it's the first to be added to said queue.
-     *
-     * @param call     to be enqueued
-     * @param callback to be called when executing it
-     */
-    public final <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback) {
-        if (!isGetCall(call)) {
-            call.enqueue(callback);
-            return;
-        }
+        mRetrofit = new Retrofit.Builder().baseUrl(mMockWebServer.url(""))
+                .addConverterFactory(GsonConverterFactory.create()).client(new OkHttpClient())
+                .build();
 
-        Queue<Callback> requestQueue = getQueueFromRequest(call);
-
-        requestQueue.add(callback);
-        if (requestQueue.size() > 1) return;
-        collapsingEnqueue(call);
-    }
-
-    private boolean isGetCall(Call call) {
-        return HTTP_METHOD_GET.equalsIgnoreCase(call.request().method());
-    }
-
-    /**
-     * Retrieves the request URL of the {@link Call} and returns a queue for it. If it doesn't exist
-     * yet, it creates it and adds it to {@link #mGetCallbackQueues}.
-     *
-     * @param call for the queue retrieval
-     * @return a {@link Queue} associated to the given {@link Call} url.
-     */
-    @NonNull
-    private Queue<Callback> getQueueFromRequest(Call call) {
-        String url = call.request().url().toString();
-
-        // Synchronization is needed here since it's safe per call but having multiple calls
-        // makes it vulnerable.
-        synchronized (mGetCallbackQueues) {
-            if (mGetCallbackQueues.containsKey(url)) return mGetCallbackQueues.get(url);
-        }
-
-        LinkedList<Callback> requestQueue = new LinkedList<>();
-        mGetCallbackQueues.put(url, requestQueue);
-        return requestQueue;
-    }
-
-    /**
-     * Calls {@link Call#enqueue(Callback)} with a {@link Callback<T>} that reports the result to
-     * the request queue.
-     *
-     * @param call to execute
-     */
-    private <T> void collapsingEnqueue(@NonNull Call<T> call) {
-        call.enqueue(new Callback<T>() {
+        mSemaphore = new Semaphore(0);
+        mCallbackBase = new Callback<String>() {
             @Override
-            public void onResponse(Call<T> call, Response<T> response) {
-                applySuccessToQueue(call, response);
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                mSemaphore.release();
             }
 
             @Override
-            public void onFailure(Call<T> call, Throwable t) {
-                applyFailureToQueue(call, t);
+            public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
+                mSemaphore.release();
+            }
+        };
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void enqueueGetCall() throws Exception {
+        mMockWebServer.enqueue(new MockResponse().setBody("\"Hello First\""));
+
+        Callback<String> callbackMock = mock(Callback.class);
+        Call<String> callMock =
+                Mockito.spy(mRetrofit.create(RetrofitTestService.class).retrofitGetMethodString());
+
+        // Enqueue Two GET requests
+        mBaseCallCollapser.enqueue(callMock, callbackMock);
+        mBaseCallCollapser.enqueue(callMock, callbackMock);
+
+        // Wait for a server response and Verify server call
+        RecordedRequest request = mMockWebServer.takeRequest();
+        assertThat(request.getPath()).isEqualTo("/api/get/");
+        assertThat(mMockWebServer.getRequestCount()).isEqualTo(1);
+        verify(callMock, times(1)).enqueue(any(Callback.class));
+
+        // Verify that both callbacks get called
+        ArgumentCaptor<Response<String>> responseCaptor = ArgumentCaptor.forClass(Response.class);
+        verify(callbackMock, times(2)).onResponse(eq(callMock), responseCaptor.capture());
+        assertThat(responseCaptor.getValue().body()).isEqualTo("Hello First");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void enqueueGetFailingCall() throws Exception {
+        mMockWebServer.enqueue(new MockResponse().setResponseCode(404));
+
+        Callback<String> callbackSpy = spy(mCallbackBase);
+        Call<String> callMock = new RetrofitCallMockBuilder()
+                .runBefore(1, TimeUnit.SECONDS)
+                .buildFailure(new Exception());
+
+        // Enqueue Two GET requests
+        mBaseCallCollapser.enqueue(callMock, callbackSpy);
+        mBaseCallCollapser.enqueue(callMock, callbackSpy);
+
+        // Wait for a server response and Verify server call
+        mSemaphore.acquire(2);
+        assertThat(mMockWebServer.getRequestCount()).isEqualTo(0);
+        verify(callMock, times(1)).enqueue(any(Callback.class));
+
+        // Verify that both callbacks get called
+        verify(callbackSpy, times(2)).onFailure(eq(callMock), any(Exception.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void enqueueGetAndPostCall() throws Exception {
+        mMockWebServer.setDispatcher(new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+                if (request.getMethod().equals("GET")) {
+                    return new MockResponse().setBody("\"Hello GET\"");
+                } else if (request.getMethod().equals("POST")) {
+                    return new MockResponse().setBody("\"Hello POST\"");
+                }
+                return new MockResponse();
             }
         });
+
+        // Prepare mocks
+        Callback<String> getCallbackSpy = spy(mCallbackBase);
+        Callback<String> postCallbackSpy = spy(mCallbackBase);
+        Call<String> getCallMock =
+                Mockito.spy(mRetrofit.create(RetrofitTestService.class).retrofitGetMethodString());
+        Call<String> postCallMock =
+                Mockito.spy(mRetrofit.create(RetrofitTestService.class).retrofitPostMethodString());
+
+        // Enqueue Two requests
+        mBaseCallCollapser.enqueue(getCallMock, getCallbackSpy);
+        mBaseCallCollapser.enqueue(postCallMock, postCallbackSpy);
+
+        // Wait for a server response
+        mSemaphore.acquire(2);
+
+        // Verify server call
+        assertThat(mMockWebServer.getRequestCount()).isEqualTo(2);
+        verify(postCallMock, times(1)).enqueue(any(Callback.class));
+        verify(getCallMock, times(1)).enqueue(any(Callback.class));
+
+        // Verify that both callbacks get called
+        ArgumentCaptor<Response<String>> responseCaptor = ArgumentCaptor.forClass(Response.class);
+        verify(getCallbackSpy, times(1)).onResponse(eq(getCallMock), responseCaptor.capture());
+        assertThat(responseCaptor.getValue().body()).isEqualTo("Hello GET");
+
+        ArgumentCaptor<Response<String>> responseCaptor2 = ArgumentCaptor.forClass(Response.class);
+        verify(postCallbackSpy, times(1)).onResponse(eq(postCallMock), responseCaptor2.capture());
+        assertThat(responseCaptor2.getValue().body()).isEqualTo("Hello POST");
     }
-
-    @SuppressWarnings("unchecked")
-    private <T> void applySuccessToQueue(@NonNull Call<T> call, @NonNull Response<T> response) {
-        Queue<Callback> requestQueue = getQueueFromRequest(call);
-
-        Callback currentCallback;
-        while ((currentCallback = requestQueue.poll()) != null) {
-            currentCallback.onResponse(call, response);
-        }
-
-        removeQueueFromRequest(call);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> void applyFailureToQueue(@NonNull Call<T> call, @NonNull Throwable t) {
-        Queue<Callback> requestQueue = getQueueFromRequest(call);
-
-        Callback currentCallback;
-        while ((currentCallback = requestQueue.poll()) != null) {
-            currentCallback.onFailure(call, t);
-        }
-
-        removeQueueFromRequest(call);
-    }
-
-    private void removeQueueFromRequest(Call call) {
-        mGetCallbackQueues.remove(call.request().url().toString());
-    }
-
 }

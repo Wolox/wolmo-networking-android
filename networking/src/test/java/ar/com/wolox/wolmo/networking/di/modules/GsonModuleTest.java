@@ -36,7 +36,6 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.internal.bind.ReflectiveTypeAdapterFactory.Adapter;
 
 import ar.com.wolox.wolmo.networking.retrofit.serializer.LocalDateSerializer;
-import ar.com.wolox.wolmo.networking.retrofit.serializer.LocalDateSerializerTest;
 import ar.com.wolox.wolmo.networking.utils.GsonTypeAdapter;
 
 import org.joda.time.LocalDate;

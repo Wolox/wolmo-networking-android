@@ -58,6 +58,5 @@ public interface NetworkingComponent {
         Builder gsonTypeAdapters(@Nullable GsonTypeAdapter... typeAdapters);
 
         NetworkingComponent build();
-
     }
 }

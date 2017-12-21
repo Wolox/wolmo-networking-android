@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.optimizations;
 
 import android.support.annotation.NonNull;
@@ -38,7 +37,7 @@ import retrofit2.Response;
  */
 public class BaseCallCollapser implements ICallCollapser {
 
-    private static final String HTTP_METHOD_GET = "GET";
+    public static final String HTTP_METHOD_GET = "GET";
 
     private final ConcurrentHashMap<String, Queue<Callback>> mGetCallbackQueues;
 
