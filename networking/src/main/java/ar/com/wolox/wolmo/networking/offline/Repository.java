@@ -114,7 +114,7 @@ public final class Repository<T, C> {
      * @param queryStrategy that determines how to react to local/network actions
      */
     public Query<T> query(@AccessPolicy final int policy, @NonNull final Call<T> call,
-                          @NonNull final QueryStrategy<T, C> queryStrategy) {
+            @NonNull final QueryStrategy<T, C> queryStrategy) {
         return new Query<T>() {
             @Override
             public void run() {
@@ -126,8 +126,12 @@ public final class Repository<T, C> {
                 T cachedData = queryStrategy.readLocalSource(mCache);
                 if (cachedData != null) {
                     doOnSuccess(cachedData);
-                } else if (policy == CACHE_ONLY) {
-                    doOnError(new CacheMissException());
+                } else {
+                    if (policy == CACHE_ONLY) {
+                        doOnError(new CacheMissException());
+                    } else {
+                        fetchData(call, queryStrategy, this);
+                    }
                 }
             }
         };
