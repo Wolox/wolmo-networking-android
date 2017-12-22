@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  * <p>
  * Copyright (c) 2017 Wolox S.A
@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 package ar.com.wolox.wolmo.networking.offline;
 
 /**
@@ -42,5 +41,4 @@ public interface IRepositoryCallback<D> {
      * @param throwable distinguishing the error.
      */
     void onError(Throwable throwable);
-
 }

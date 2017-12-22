@@ -19,32 +19,31 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package ar.com.wolox.wolmo.networking.optimizations;
+package ar.com.wolox.wolmo.networking.di.modules;
 
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import retrofit2.Call;
-import retrofit2.Callback;
+import dagger.Module;
+import dagger.Provides;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 
-/**
- * A Call Collapser is a mechanism of network optimization that prevents repetitive consecutive
- * HTTP requests that would most probably return the same response from the network.
- * <p>
- * It enqueues requests of the same type so only one HTTP request is sent over the network but
- * every local callback gets notified as if they have made the request.
- * <p>
- * Example:
- * Making several consecutive GET HTTP requests to "www.example.com/v1/users/$userID"
- * in a short interval will probably result in the same user data being retrieved. A Call Collapser
- * would instead make only one HTTP request and return the same result to every local caller.
- */
-public interface ICallCollapser {
+@Module
+public class OkHttpClientModule {
 
-    /**
-     * Handles the API call avoiding repetitive and useless requests as much as possible
-     *
-     * @param call to be made to the API
-     * @param callback to be called after executing it
-     */
-    <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback);
+    @Provides
+    static OkHttpClient provideOkHttpClient(OkHttpClient.Builder okHttpBuilder,
+                                            @Nullable Interceptor... interceptors) {
+        if (interceptors != null) {
+            for (Interceptor interceptor : interceptors) {
+                okHttpBuilder.addInterceptor(interceptor);
+            }
+        }
+        return okHttpBuilder.build();
+    }
+
+    @Provides
+    static OkHttpClient.Builder provideOkHttpClientBuilder() {
+        return new OkHttpClient.Builder();
+    }
 }

@@ -19,32 +19,32 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package ar.com.wolox.wolmo.networking.optimizations;
+package ar.com.wolox.wolmo.networking.utils;
 
-import android.support.annotation.NonNull;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import retrofit2.Call;
-import retrofit2.Callback;
+import java.lang.reflect.Type;
 
 /**
- * A Call Collapser is a mechanism of network optimization that prevents repetitive consecutive
- * HTTP requests that would most probably return the same response from the network.
- * <p>
- * It enqueues requests of the same type so only one HTTP request is sent over the network but
- * every local callback gets notified as if they have made the request.
- * <p>
- * Example:
- * Making several consecutive GET HTTP requests to "www.example.com/v1/users/$userID"
- * in a short interval will probably result in the same user data being retrieved. A Call Collapser
- * would instead make only one HTTP request and return the same result to every local caller.
+ * Container util with {@link Gson} TypeAdapters.
+ * This adapters will be added to Gson using {@link GsonBuilder#registerTypeAdapter(Type, Object)}
  */
-public interface ICallCollapser {
+public class GsonTypeAdapter {
 
-    /**
-     * Handles the API call avoiding repetitive and useless requests as much as possible
-     *
-     * @param call to be made to the API
-     * @param callback to be called after executing it
-     */
-    <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback);
+    private final Type mType;
+    private final Object mTypeAdapter;
+
+    public GsonTypeAdapter(Type type, Object typeAdapter) {
+        mType = type;
+        mTypeAdapter = typeAdapter;
+    }
+
+    public Type getType() {
+        return mType;
+    }
+
+    public Object getTypeAdapter() {
+        return mTypeAdapter;
+    }
 }

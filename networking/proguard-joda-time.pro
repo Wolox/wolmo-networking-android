@@ -1,4 +1,4 @@
-## Joda Time 2.3
+## Joda Time 2.9
 
 -dontwarn org.joda.convert.**
 -dontwarn org.joda.time.**
