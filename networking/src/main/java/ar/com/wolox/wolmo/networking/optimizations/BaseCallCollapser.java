@@ -52,7 +52,7 @@ public class BaseCallCollapser implements ICallCollapser {
      * Collapsing the call means adding it to the queue of the same
      * request, and executing it if it's the first to be added to said queue.
      *
-     * @param call     to be enqueued
+     * @param call to be enqueued
      * @param callback to be called when executing it
      */
     public final <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback) {
@@ -77,6 +77,7 @@ public class BaseCallCollapser implements ICallCollapser {
      * yet, it creates it and adds it to {@link #mGetCallbackQueues}.
      *
      * @param call for the queue retrieval
+     *
      * @return a {@link Queue} associated to the given {@link Call} url.
      */
     @NonNull
@@ -141,5 +142,4 @@ public class BaseCallCollapser implements ICallCollapser {
     private void removeQueueFromRequest(Call call) {
         mGetCallbackQueues.remove(call.request().url().toString());
     }
-
 }

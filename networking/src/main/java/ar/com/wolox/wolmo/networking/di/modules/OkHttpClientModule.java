@@ -33,7 +33,7 @@ public class OkHttpClientModule {
 
     @Provides
     static OkHttpClient provideOkHttpClient(OkHttpClient.Builder okHttpBuilder,
-            @Nullable Interceptor... interceptors) {
+                                            @Nullable Interceptor... interceptors) {
         if (interceptors != null) {
             for (Interceptor interceptor : interceptors) {
                 okHttpBuilder.addInterceptor(interceptor);

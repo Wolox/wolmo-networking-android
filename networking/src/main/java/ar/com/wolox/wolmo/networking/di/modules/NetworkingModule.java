@@ -42,11 +42,10 @@ public class NetworkingModule {
     @Provides
     @NetworkingScope
     static Retrofit provideRetrofit(Retrofit.Builder builder, String baseUrl,
-            GsonConverterFactory gsonConverterFactory, OkHttpClient client) {
+                                    GsonConverterFactory gsonConverterFactory,
+                                    OkHttpClient client) {
 
-        return builder.baseUrl(baseUrl)
-                .addConverterFactory(gsonConverterFactory)
-                .client(client)
+        return builder.baseUrl(baseUrl).addConverterFactory(gsonConverterFactory).client(client)
                 .build();
     }
 }

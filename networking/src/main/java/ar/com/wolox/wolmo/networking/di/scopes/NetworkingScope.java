@@ -28,5 +28,4 @@ import javax.inject.Scope;
 
 @Scope
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NetworkingScope {
-}
+public @interface NetworkingScope {}

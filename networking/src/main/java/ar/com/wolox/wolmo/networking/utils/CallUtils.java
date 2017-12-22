@@ -56,9 +56,11 @@ public class CallUtils {
      * @return a {@link Timer} which is controlling the polling
      */
     public static <T> Timer pollWithDelay(@IntRange(from = 1) final int tries,
-            @NonNull final Call<T> call, @NonNull final Predicate<Response<T>> pollingCondition,
-            @NonNull final Callback<T> callback, @IntRange(from = 0) long delay,
-            @NonNull TimeUnit timeoutUnit) {
+                                          @NonNull final Call<T> call,
+                                          @NonNull final Predicate<Response<T>> pollingCondition,
+                                          @NonNull final Callback<T> callback,
+                                          @IntRange(from = 0) long delay,
+                                          @NonNull TimeUnit timeoutUnit) {
         // Timer can be used safely since Retrofit callback is called on UiThread
         Timer pollingTimer = new Timer();
         pollWithDelay(tries, call, pollingCondition, callback, timeoutUnit.toMillis(delay),
@@ -69,9 +71,11 @@ public class CallUtils {
     public static int TRIES = 0;
 
     private static <T> void pollWithDelay(@IntRange(from = 1) final int triesRemaining,
-            @NonNull final Call<T> call, @NonNull final Predicate<Response<T>> pollingCondition,
-            @NonNull final Callback<T> callback, @IntRange(from = 0) long delayInMillis,
-            @NonNull final Timer pollingTimer) {
+                                          @NonNull final Call<T> call,
+                                          @NonNull final Predicate<Response<T>> pollingCondition,
+                                          @NonNull final Callback<T> callback,
+                                          @IntRange(from = 0) long delayInMillis,
+                                          @NonNull final Timer pollingTimer) {
 
         if (triesRemaining <= 0) {
             callback.onFailure(call, new PollRunOutOfTriesException(call));

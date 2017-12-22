@@ -127,8 +127,12 @@ public final class Repository<T, C> {
                 T cachedData = queryStrategy.readLocalSource(mCache);
                 if (cachedData != null) {
                     doOnSuccess(cachedData);
-                } else if (policy == CACHE_ONLY) {
-                    doOnError(new CacheMissException());
+                } else {
+                    if (policy == CACHE_ONLY) {
+                        doOnError(new CacheMissException());
+                    } else {
+                        fetchData(call, queryStrategy, this);
+                    }
                 }
             }
         };
@@ -182,7 +186,7 @@ public final class Repository<T, C> {
      */
     public void query(@NonNull final Call<T> call, @NonNull QueryStrategy<T, C> queryStrategy,
                       @NonNull final IRepositoryCallback<T> callback) {
-        query(call, queryStrategy, callback);
+        query(mDefaultAccessPolicy, call, queryStrategy, callback);
     }
 
     /**

@@ -18,5 +18,4 @@ public class CachingModule {
     static ICallCollapser provideBaseCallCollapser() {
         return new BaseCallCollapser();
     }
-
 }

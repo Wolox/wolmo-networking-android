@@ -60,7 +60,8 @@ public class GsonModule {
 
     @Provides
     static GsonBuilder provideGsonBuilder(@Named("newInstance") GsonBuilder gsonBuilder,
-            @NonNull FieldNamingPolicy namingPolicy, @Nullable GsonTypeAdapter... typeAdapters) {
+                                          @NonNull FieldNamingPolicy namingPolicy,
+                                          @Nullable GsonTypeAdapter... typeAdapters) {
 
         gsonBuilder.setFieldNamingPolicy(namingPolicy);
 
