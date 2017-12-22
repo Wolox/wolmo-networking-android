@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  * <p>
  * Copyright (c) 2017 Wolox S.A
@@ -26,15 +26,15 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 import ar.com.wolox.wolmo.networking.exception.CacheMissException;
 import ar.com.wolox.wolmo.networking.exception.NetworkResourceException;
-import ar.com.wolox.wolmo.networking.optimizations.BaseCallCollapser;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
 import ar.com.wolox.wolmo.networking.utils.Consumer;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 
@@ -50,7 +50,7 @@ public final class Repository<T, C> {
      * Flags for cache access control.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({CACHE_NONE, CACHE_FIRST, CACHE_ONLY})
+    @IntDef({ CACHE_NONE, CACHE_FIRST, CACHE_ONLY })
     public @interface AccessPolicy {}
 
     /**
@@ -74,8 +74,6 @@ public final class Repository<T, C> {
      */
     public static @AccessPolicy int DEFAULT_ACCESS_POLICY = CACHE_FIRST;
 
-    private static ICallCollapser CALL_COLLAPSER_INSTANCE = new BaseCallCollapser();
-
     private final C mCache;
     private final @AccessPolicy int mDefaultAccessPolicy;
     private final ICallCollapser mCallCollapser;
@@ -83,22 +81,25 @@ public final class Repository<T, C> {
     /**
      * Creates a repository with a default {@link AccessPolicy}.
      * <p/>
+     *
      * @param cache to query for cached items
      * @param defaultAccessPolicy that determines default interaction with cache
      */
-    public Repository(@NonNull C cache, @AccessPolicy int defaultAccessPolicy) {
+    public Repository(@NonNull C cache, @NonNull ICallCollapser callCollapser,
+                      @AccessPolicy int defaultAccessPolicy) {
         mCache = cache;
         mDefaultAccessPolicy = defaultAccessPolicy;
-        mCallCollapser = CALL_COLLAPSER_INSTANCE;
+        mCallCollapser = callCollapser;
     }
 
     /**
      * Creates a repository with {@link #DEFAULT_ACCESS_POLICY} as its policy.
      * <p/>
+     *
      * @param cache to query for cached items
      */
-    public Repository(@NonNull C cache) {
-        this(cache, DEFAULT_ACCESS_POLICY);
+    public Repository(@NonNull C cache, @NonNull ICallCollapser callCollapser) {
+        this(cache, callCollapser, DEFAULT_ACCESS_POLICY);
     }
 
     /**
@@ -228,7 +229,7 @@ public final class Repository<T, C> {
             }
 
             @Override
-            public void onCallFailure(Throwable throwable) {
+            public void onCallFailure(@NonNull Throwable throwable) {
                 repositoryQuery.doOnError(throwable);
             }
         });
@@ -262,7 +263,6 @@ public final class Repository<T, C> {
          * @param cache to interact with
          */
         void consumeRemoteSource(@NonNull T data, @NonNull C cache);
-
     }
 
     /**
@@ -312,6 +312,5 @@ public final class Repository<T, C> {
         void doOnError(Throwable throwable) {
             if (errorConsumer != null) errorConsumer.accept(throwable);
         }
-
     }
 }

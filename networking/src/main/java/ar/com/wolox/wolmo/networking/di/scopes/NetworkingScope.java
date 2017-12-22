@@ -19,32 +19,13 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package ar.com.wolox.wolmo.networking.optimizations;
+package ar.com.wolox.wolmo.networking.di.scopes;
 
-import android.support.annotation.NonNull;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-import retrofit2.Call;
-import retrofit2.Callback;
+import javax.inject.Scope;
 
-/**
- * A Call Collapser is a mechanism of network optimization that prevents repetitive consecutive
- * HTTP requests that would most probably return the same response from the network.
- * <p>
- * It enqueues requests of the same type so only one HTTP request is sent over the network but
- * every local callback gets notified as if they have made the request.
- * <p>
- * Example:
- * Making several consecutive GET HTTP requests to "www.example.com/v1/users/$userID"
- * in a short interval will probably result in the same user data being retrieved. A Call Collapser
- * would instead make only one HTTP request and return the same result to every local caller.
- */
-public interface ICallCollapser {
-
-    /**
-     * Handles the API call avoiding repetitive and useless requests as much as possible
-     *
-     * @param call to be made to the API
-     * @param callback to be called after executing it
-     */
-    <T> void enqueue(@NonNull Call<T> call, @NonNull Callback<T> callback);
-}
+@Scope
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NetworkingScope {}

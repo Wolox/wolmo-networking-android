@@ -1,5 +1,6 @@
 [![Build Status](https://www.bitrise.io/app/98b385dd0144faa0/status.svg?token=9gD8GNFS5DF6iIQ7eecIXA&branch=master)](https://www.bitrise.io/app/98b385dd0144faa0)
 [![Release](https://jitpack.io/v/Wolox/wolmo-networking-android.svg)](https://jitpack.io/#Wolox/wolmo-networking-android)
+[![Coverage Status](https://coveralls.io/repos/github/Wolox/wolmo-networking-android/badge.svg?branch=master)](https://coveralls.io/github/Wolox/wolmo-networking-android?branch=master)
 
 <p align="center">
   <img height="140px" width="400px" src="https://cloud.githubusercontent.com/assets/4109119/25454461/de81fad0-2aa2-11e7-831d-b1f3ea7f313a.png"/>
