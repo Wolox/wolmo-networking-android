@@ -34,7 +34,7 @@ coveralls {
 }
 
 buildscript {
-    ext.wolmo_version = 'v2.0.0-rc1'
+    ext.wolmo_version = '2.0.0'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.13'
@@ -58,7 +58,7 @@ dependencies {
 
     // Test
     testImplementation "junit:junit:4.12"
-    testImplementation "org.mockito:mockito-inline:2.11.0" // Mockito inline adds support for mocking final classes and methods
-    testImplementation "org.assertj:assertj-core:3.8.0"
+    testImplementation "org.mockito:mockito-inline:2.13.0" // Mockito inline adds support for mocking final classes and methods
+    testImplementation "org.assertj:assertj-core:3.9.0"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp3_version"
 }
