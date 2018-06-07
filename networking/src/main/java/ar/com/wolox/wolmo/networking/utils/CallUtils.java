@@ -26,12 +26,11 @@ import android.support.annotation.NonNull;
 
 import com.android.internal.util.Predicate;
 
-import ar.com.wolox.wolmo.networking.exception.PollRunOutOfTriesException;
-
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import ar.com.wolox.wolmo.networking.exception.PollRunOutOfTriesException;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -68,8 +67,6 @@ public class CallUtils {
         return pollingTimer;
     }
 
-    public static int TRIES = 0;
-
     private static <T> void pollWithDelay(@IntRange(from = 1) final int triesRemaining,
                                           @NonNull final Call<T> call,
                                           @NonNull final Predicate<Response<T>> pollingCondition,
@@ -104,6 +101,5 @@ public class CallUtils {
                 callback.onFailure(call, t);
             }
         });
-        TRIES++;
     }
 }

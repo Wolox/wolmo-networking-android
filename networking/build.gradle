@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.github.kt3k.coveralls'
-apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.Wolox'
 
@@ -35,7 +34,7 @@ coveralls {
 }
 
 buildscript {
-    ext.wolmo_version = '2.0.2'
+    ext.wolmo_version = '2.0.3'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.13'
@@ -62,26 +61,4 @@ dependencies {
     testImplementation "org.mockito:mockito-inline:2.13.0" // Mockito inline adds support for mocking final classes and methods
     testImplementation "org.assertj:assertj-core:3.9.0"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp3_version"
-}
-
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-task javadoc(type: Javadoc) {
-    failOnError  false
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    classpath += configurations.compile
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
 }
