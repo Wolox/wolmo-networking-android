@@ -38,6 +38,7 @@ buildscript {
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.13'
+    ext.joda_version = '2.10'
 }
 
 dependencies {
@@ -54,7 +55,7 @@ dependencies {
     api "com.squareup.retrofit2:converter-gson:$retrofit_version"
     api "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
     api "com.squareup.okhttp3:okhttp:$okhttp3_version"
-    api 'joda-time:joda-time:2.9.9'
+    api "joda-time:joda-time:$joda_version"
 
     // Test
     testImplementation "junit:junit:4.12"
