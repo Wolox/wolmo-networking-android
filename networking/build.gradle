@@ -34,7 +34,7 @@ coveralls {
 }
 
 buildscript {
-    ext.wolmo_version = '2.0.3'
+    ext.wolmo_version = '2.0.4'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.13'
