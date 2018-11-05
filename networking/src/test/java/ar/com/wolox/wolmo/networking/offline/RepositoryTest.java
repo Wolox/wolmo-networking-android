@@ -29,11 +29,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import ar.com.wolox.wolmo.core.java8.Consumer;
 import ar.com.wolox.wolmo.networking.exception.CacheMissException;
 import ar.com.wolox.wolmo.networking.exception.NetworkResourceException;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import ar.com.wolox.wolmo.networking.test_utils.RetrofitCallMockBuilder;
-import ar.com.wolox.wolmo.networking.utils.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;

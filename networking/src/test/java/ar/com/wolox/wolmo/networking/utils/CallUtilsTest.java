@@ -30,8 +30,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.android.internal.util.Predicate;
-
+import ar.com.wolox.wolmo.core.java8.Predicate;
 import ar.com.wolox.wolmo.networking.test_utils.RetrofitCallMockBuilder;
 
 import org.junit.Before;
@@ -73,7 +72,7 @@ public class CallUtilsTest {
     @SuppressWarnings("unchecked")
     public void testPollWithDelayUntilTimeout() throws Exception {
         Predicate<Response<String>> pollingConditionMock = mock(Predicate.class);
-        when(pollingConditionMock.apply(any(Response.class))).thenReturn(true);
+        when(pollingConditionMock.test(any(Response.class))).thenReturn(true);
 
         Call<String> callMock = new RetrofitCallMockBuilder().build((call, callback) -> {
             callback.onResponse(call, mock(Response.class));
@@ -84,7 +83,7 @@ public class CallUtilsTest {
                 TimeUnit.MILLISECONDS);
         mSemaphore.acquire(TRIES + 1); // Tries + 1 Extra permit on final callback
 
-        verify(pollingConditionMock, times(TRIES)).apply(any(Response.class));
+        verify(pollingConditionMock, times(TRIES)).test(any(Response.class));
         verify(callMock, times(TRIES)).enqueue(any(Callback.class));
         verify(mCallbackSpy, times(1)).onFailure(eq(callMock), any(Exception.class));
     }
@@ -93,7 +92,7 @@ public class CallUtilsTest {
     @SuppressWarnings("unchecked")
     public void testPollWithDelaySuccess() throws Exception {
         Predicate<Response<String>> pollingConditionMock = mock(Predicate.class);
-        when(pollingConditionMock.apply(any(Response.class))).thenReturn(true).thenReturn(true)
+        when(pollingConditionMock.test(any(Response.class))).thenReturn(true).thenReturn(true)
                 .thenReturn(false); // 3 Tries
 
         Call<String> callMock = new RetrofitCallMockBuilder().build((call, callback) -> {
@@ -105,7 +104,7 @@ public class CallUtilsTest {
                 TimeUnit.MILLISECONDS);
         mSemaphore.acquire(4); // 3 Tries + 1 Extra permit on final callback
 
-        verify(pollingConditionMock, times(3)).apply(any(Response.class));
+        verify(pollingConditionMock, times(3)).test(any(Response.class));
         verify(callMock, times(3)).enqueue(any(Callback.class));
         verify(mCallbackSpy, times(1)).onResponse(any(Call.class), any(Response.class));
     }

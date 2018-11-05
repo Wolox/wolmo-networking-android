@@ -26,11 +26,11 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import ar.com.wolox.wolmo.core.java8.Consumer;
 import ar.com.wolox.wolmo.networking.exception.CacheMissException;
 import ar.com.wolox.wolmo.networking.exception.NetworkResourceException;
 import ar.com.wolox.wolmo.networking.optimizations.ICallCollapser;
 import ar.com.wolox.wolmo.networking.retrofit.callback.NetworkCallback;
-import ar.com.wolox.wolmo.networking.utils.Consumer;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
