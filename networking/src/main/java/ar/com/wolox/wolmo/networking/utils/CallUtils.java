@@ -24,12 +24,11 @@ package ar.com.wolox.wolmo.networking.utils;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 
-import com.android.internal.util.Predicate;
-
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import ar.com.wolox.wolmo.core.java8.Predicate;
 import ar.com.wolox.wolmo.networking.exception.PollRunOutOfTriesException;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -81,8 +80,8 @@ public class CallUtils {
 
         call.enqueue(new Callback<T>() {
             @Override
-            public void onResponse(Call<T> call, Response<T> response) {
-                if (!pollingCondition.apply(response)) {
+            public void onResponse(@NonNull Call<T> call, @NonNull Response<T> response) {
+                if (!pollingCondition.test(response)) {
                     callback.onResponse(call, response);
                     return;
                 }
@@ -97,7 +96,7 @@ public class CallUtils {
             }
 
             @Override
-            public void onFailure(Call<T> call, Throwable t) {
+            public void onFailure(@NonNull Call<T> call, @NonNull Throwable t) {
                 callback.onFailure(call, t);
             }
         });
