@@ -21,6 +21,7 @@
  */
 package ar.com.wolox.wolmo.networking.retrofit.callback;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -48,7 +49,7 @@ public abstract class NetworkCallback<T> implements Callback<T> {
         if (isAuthError(response)) {
             handleAuthError(response);
         } else if (response.isSuccessful()) {
-            onResponseSuccessful(response.body());
+            onResponseSuccessful(response, response.body());
         } else {
             onResponseFailed(response.errorBody(), response.code());
         }
@@ -96,7 +97,7 @@ public abstract class NetworkCallback<T> implements Callback<T> {
      * @param response the API JSON response converted to a Java object.
      * The API response code is included in the response object.
      */
-    public abstract void onResponseSuccessful(@Nullable T response);
+    public abstract void onResponseSuccessful(@NonNull Response<T> response, @Nullable T responseBody);
 
     /**
      * Successful HTTP response from the server, but has an error body.

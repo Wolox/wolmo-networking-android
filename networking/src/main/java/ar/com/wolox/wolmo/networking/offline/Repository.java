@@ -37,6 +37,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Handles the caching retrieval of a query and success/error notification regarding that operation.
@@ -217,7 +218,7 @@ public final class Repository<T, C> {
 
         mCallCollapser.enqueue(call, new NetworkCallback<T>() {
             @Override
-            public void onResponseSuccessful(T data) {
+            public void onResponseSuccessful(@NonNull Response<T> response, @Nullable T data) {
                 queryStrategy.consumeRemoteSource(data, mCache);
                 repositoryQuery.doOnSuccess(data);
             }
