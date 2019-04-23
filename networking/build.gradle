@@ -37,7 +37,7 @@ buildscript {
     ext.wolmo_version = '2.0.5'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
-    ext.dagger_version = '2.13'
+    ext.dagger_version = '2.22.1'
     ext.joda_version = '2.10'
 }
 
@@ -46,9 +46,11 @@ dependencies {
 
     // Wolmo
 //    implementation "com.github.Wolox:wolmo-core-android:$wolmo_version"
-    api 'com.github.Wolox:wolmo-core-android:androix-migration-SNAPSHOT'
+    implementation 'com.github.Wolox:wolmo-core-android:androix-migration-SNAPSHOT'
 
     // Dagger
+    api "com.google.dagger:dagger:$dagger_version"
+    api "com.google.dagger:dagger-android-support:$dagger_version"
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Third party
@@ -57,6 +59,7 @@ dependencies {
     api "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
     api "com.squareup.okhttp3:okhttp:$okhttp3_version"
     api "joda-time:joda-time:$joda_version"
+    api 'com.google.code.findbugs:jsr305:3.0.2'
 
     // Test
     testImplementation "junit:junit:4.12"
