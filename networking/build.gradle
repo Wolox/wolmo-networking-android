@@ -46,7 +46,7 @@ dependencies {
 
     // Wolmo
 //    implementation "com.github.Wolox:wolmo-core-android:$wolmo_version"
-    implementation 'com.github.Wolox:wolmo-core-android:androix-migration-SNAPSHOT'
+    api 'com.github.Wolox:wolmo-core-android:androix-migration-SNAPSHOT'
 
     // Dagger
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
