@@ -22,9 +22,9 @@
 
 package ar.com.wolox.wolmo.networking.offline;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import ar.com.wolox.wolmo.core.java8.Consumer;
 import ar.com.wolox.wolmo.networking.exception.CacheMissException;

@@ -21,7 +21,7 @@
  */
 package ar.com.wolox.wolmo.networking.di.modules;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import dagger.Module;
 import dagger.Provides;

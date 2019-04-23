@@ -29,7 +29,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import ar.com.wolox.wolmo.networking.test_utils.RetrofitCallMockBuilder;
 import ar.com.wolox.wolmo.networking.test_utils.service.RetrofitTestService;
