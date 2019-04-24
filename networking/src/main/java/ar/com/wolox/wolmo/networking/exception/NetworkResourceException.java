@@ -22,7 +22,7 @@
 package ar.com.wolox.wolmo.networking.exception;
 
 import android.annotation.SuppressLint;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import ar.com.wolox.wolmo.networking.offline.Repository;
 

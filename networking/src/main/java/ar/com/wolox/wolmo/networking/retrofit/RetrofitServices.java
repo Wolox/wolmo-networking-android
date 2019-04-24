@@ -21,7 +21,7 @@
  */
 package ar.com.wolox.wolmo.networking.retrofit;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import ar.com.wolox.wolmo.networking.di.scopes.NetworkingScope;
 

@@ -21,7 +21,7 @@
  */
 package ar.com.wolox.wolmo.networking.optimizations;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import retrofit2.Call;
 import retrofit2.Callback;

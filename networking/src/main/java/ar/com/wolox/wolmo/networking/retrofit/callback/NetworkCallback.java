@@ -21,7 +21,7 @@
  */
 package ar.com.wolox.wolmo.networking.retrofit.callback;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

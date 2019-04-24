@@ -21,7 +21,7 @@
  */
 package ar.com.wolox.wolmo.networking.di;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.google.gson.FieldNamingPolicy;
 
