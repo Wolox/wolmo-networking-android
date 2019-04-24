@@ -34,19 +34,22 @@ coveralls {
 }
 
 buildscript {
-    ext.wolmo_version = '2.0.5'
+    ext.wolmo_version = '3.0.0'
     ext.retrofit_version = '2.3.0'
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.22.1'
     ext.joda_version = '2.10'
+    ext.bugs_version = '3.0.2'
+    ext.junit_version = '4.12'
+    ext.mockito_inline_version = '2.13.0'
+    ext.assertj_version = '3.9.0'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-//    implementation "com.github.Wolox:wolmo-core-android:$wolmo_version"
-    api 'com.github.Wolox:wolmo-core-android:androix-migration-SNAPSHOT'
+    api "com.github.Wolox:wolmo-core-android:$wolmo_version"
 
     // Dagger
     api "com.google.dagger:dagger:$dagger_version"
@@ -59,11 +62,11 @@ dependencies {
     api "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
     api "com.squareup.okhttp3:okhttp:$okhttp3_version"
     api "joda-time:joda-time:$joda_version"
-    api 'com.google.code.findbugs:jsr305:3.0.2'
+    api "com.google.code.findbugs:jsr305:$bugs_version"
 
     // Test
-    testImplementation "junit:junit:4.12"
-    testImplementation "org.mockito:mockito-inline:2.13.0" // Mockito inline adds support for mocking final classes and methods
-    testImplementation "org.assertj:assertj-core:3.9.0"
+    testImplementation "junit:junit:$junit_version"
+    testImplementation "org.mockito:mockito-inline:$mockito_inline_version" // Mockito inline adds support for mocking final classes and methods
+    testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp3_version"
 }
