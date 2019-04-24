@@ -39,7 +39,7 @@ buildscript {
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.22.1'
     ext.joda_version = '2.10'
-    ext.bugs_version = '3.0.2'
+    ext.findbugs_version = '3.0.2'
     ext.junit_version = '4.12'
     ext.mockito_inline_version = '2.13.0'
     ext.assertj_version = '3.9.0'
@@ -62,7 +62,7 @@ dependencies {
     api "com.squareup.okhttp3:okhttp-urlconnection:$okhttp3_version"
     api "com.squareup.okhttp3:okhttp:$okhttp3_version"
     api "joda-time:joda-time:$joda_version"
-    api "com.google.code.findbugs:jsr305:$bugs_version"
+    api "com.google.code.findbugs:jsr305:$findbugs_version"
 
     // Test
     testImplementation "junit:junit:$junit_version"
