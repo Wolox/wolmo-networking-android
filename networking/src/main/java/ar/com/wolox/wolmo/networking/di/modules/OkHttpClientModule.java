@@ -23,6 +23,8 @@ package ar.com.wolox.wolmo.networking.di.modules;
 
 import android.support.annotation.Nullable;
 
+import java.util.concurrent.TimeUnit;
+
 import dagger.Module;
 import dagger.Provides;
 import okhttp3.Interceptor;
@@ -30,7 +32,9 @@ import okhttp3.OkHttpClient;
 
 @Module
 public class OkHttpClientModule {
-
+    
+    static final int TIMEOUT_IN_SECONDS = 60;
+    
     @Provides
     static OkHttpClient provideOkHttpClient(OkHttpClient.Builder okHttpBuilder,
                                             @Nullable Interceptor... interceptors) {
@@ -44,6 +48,8 @@ public class OkHttpClientModule {
 
     @Provides
     static OkHttpClient.Builder provideOkHttpClientBuilder() {
-        return new OkHttpClient.Builder();
+        return new OkHttpClient.Builder().readTimeout(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
+                .writeTimeout(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
+                .connectTimeout(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
     }
 }
