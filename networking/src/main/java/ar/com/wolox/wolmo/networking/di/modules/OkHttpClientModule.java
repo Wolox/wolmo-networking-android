@@ -33,7 +33,7 @@ import okhttp3.OkHttpClient;
 @Module
 public class OkHttpClientModule {
     
-    static final int TIMEOUT_IN_SECONDS = 60;
+    static final int TIMEOUT_IN_SECONDS = 300;
     
     @Provides
     static OkHttpClient provideOkHttpClient(OkHttpClient.Builder okHttpBuilder,
