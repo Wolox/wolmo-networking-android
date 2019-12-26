@@ -5,12 +5,12 @@ apply plugin: 'com.github.kt3k.coveralls'
 group = 'com.github.Wolox'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion '28.0.3'
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 29
         consumerProguardFiles 'proguard-retrofit.pro', 'proguard-okhttp.pro', 'proguard-gson.pro',
                 'proguard-joda-time.pro'
     }
@@ -35,9 +35,9 @@ coveralls {
 
 buildscript {
     ext.wolmo_version = '3.0.0'
-    ext.retrofit_version = '2.3.0'
+    ext.retrofit_version = '2.7.0'
     ext.okhttp3_version = '3.9.0'
-    ext.dagger_version = '2.22.1'
+    ext.dagger_version = '2.25.3'
     ext.joda_version = '2.10'
     ext.findbugs_version = '3.0.2'
     ext.junit_version = '4.12'
