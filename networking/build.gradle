@@ -49,7 +49,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     // Wolmo
-    api "com.github.Wolox:wolmo-core-android:$wolmo_version"
+    api "com.github.Wolox:wolmo-core-android:coroutine-test-SNAPSHOT"
 
     // Dagger
     api "com.google.dagger:dagger:$dagger_version"
