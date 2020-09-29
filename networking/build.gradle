@@ -68,6 +68,9 @@ dependencies {
     api "joda-time:joda-time:$joda_version"
     api "com.google.code.findbugs:jsr305:$findbugs_version"
 
+    kapt "com.google.dagger:dagger-android-processor:$dagger_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+
     // Test
     testImplementation "junit:junit:$junit_version"
     testImplementation "org.mockito:mockito-inline:$mockito_inline_version" // Mockito inline adds support for mocking final classes and methods
