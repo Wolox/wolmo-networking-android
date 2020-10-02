@@ -107,12 +107,12 @@ public abstract class NetworkCallback<T> implements Callback<T> {
      */
     public abstract void onResponseFailed(@Nullable ResponseBody responseBody, int code);
 
-        /**
-         * The HTTP request to the server failed on the local device, no data was transmitted.
-         * Invoked when a network or unexpected exception occurred during the HTTP request, meaning
-         * that the request couldn't be executed.
-         *
-         * @param t A Throwable with the cause of the call failure
-         */
+    /**
+     * The HTTP request to the server failed on the local device, no data was transmitted.
+     * Invoked when a network or unexpected exception occurred during the HTTP request, meaning
+     * that the request couldn't be executed.
+     *
+     * @param t A Throwable with the cause of the call failure
+     */
     public abstract void onCallFailure(Throwable t);
 }
