@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'jacoco-android'
-//apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'com.github.kt3k.coveralls'
 
 group = 'com.github.Wolox'
 
@@ -33,9 +33,9 @@ jacocoAndroidUnitTestReport {
 }
 
 
-//coveralls {
-//    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReleaseUnitTestReport/jacocoTestReleaseUnitTestReport.xml"
-//}
+coveralls {
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReleaseUnitTestReport/jacocoTestReleaseUnitTestReport.xml"
+}
 
 buildscript {
     ext.wolmo_version = '4.0.0'
