@@ -23,7 +23,6 @@ class NetworkRequestHandlerTest {
         // GIVEN
         val apiResponse = mock(Response::class.java) as Response<Any>
 
-
         // WHEN
         `when`(apiResponse.isSuccessful).thenReturn(true)
 
