@@ -1,4 +1,7 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.github.kt3k.coveralls'
 
@@ -29,19 +32,20 @@ jacocoAndroidUnitTestReport {
     excludes = defaultExcludes + ['**/*_Factory.class']
 }
 
+
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReleaseUnitTestReport/jacocoTestReleaseUnitTestReport.xml"
 }
 
 buildscript {
     ext.wolmo_version = '4.0.0'
-    ext.retrofit_version = '2.7.0'
+    ext.retrofit_version = '2.9.0'
     ext.okhttp3_version = '3.9.0'
     ext.dagger_version = '2.25.3'
     ext.joda_version = '2.10'
     ext.findbugs_version = '3.0.2'
     ext.junit_version = '4.12'
-    ext.mockito_inline_version = '2.13.0'
+    ext.mockito_inline_version = '2.19.0'
     ext.assertj_version = '3.9.0'
 }
 
@@ -63,6 +67,9 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttp3_version"
     api "joda-time:joda-time:$joda_version"
     api "com.google.code.findbugs:jsr305:$findbugs_version"
+
+    kapt "com.google.dagger:dagger-android-processor:$dagger_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Test
     testImplementation "junit:junit:$junit_version"
