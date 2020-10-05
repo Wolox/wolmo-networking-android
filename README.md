@@ -1,4 +1,4 @@
-[![Build Status](https://www.bitrise.io/app/98b385dd0144faa0/status.svg?token=9gD8GNFS5DF6iIQ7eecIXA&branch=master)](https://www.bitrise.io/app/98b385dd0144faa0)
+[![Build Status](https://app.bitrise.io/app/98b385dd0144faa0/status.svg?token=9gD8GNFS5DF6iIQ7eecIXA&branch=master)](https://app.bitrise.io/app/98b385dd0144faa0)
 [![Release](https://jitpack.io/v/Wolox/wolmo-networking-android.svg)](https://jitpack.io/#Wolox/wolmo-networking-android)
 [![Coverage Status](https://coveralls.io/repos/github/Wolox/wolmo-networking-android/badge.svg?branch=master)](https://coveralls.io/github/Wolox/wolmo-networking-android?branch=master)
 
